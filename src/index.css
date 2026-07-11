@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+/* ============================================================
+   THEME
+   Near-black warm ground with a maroon → crimson → rust signal
+   palette. Space Grotesk carries display/structure, Inter carries
+   body copy.
+============================================================ */
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
+
+  --color-bg: #0f0609;
+  --color-bg-2: #170a0d;
+  --color-card: #201014;
+  --color-card-2: #190c0f;
+
+  --color-primary: #9f1239;
+  --color-accent: #e11d48;
+  --color-violet: #9a3412;
+  --color-highlight: #fb7185;
+
+  --color-muted: #cbd5e1;
+  --color-muted-2: #8ea0bd;
+  --color-avail: #10b981;
+  --color-avail-text: #6ee7b7;
+  --color-heart: #f87171;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 2s infinite;
+  --animate-blink: blink 1s steps(2) infinite;
+  --animate-scrolldot: scrolldot 1.6s ease infinite;
+  --animate-drift: drift 18s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-18px) rotate(2deg); }
+}
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+@keyframes scrolldot {
+  0% { opacity: 0; transform: translateY(-4px); }
+  40% { opacity: 1; }
+  80% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, -6%) scale(1.08); }
+}
+@keyframes load {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ============================================================
+   RESET / BASE
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { margin: 0; font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; color: #fff; }
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; margin: 0; padding: 0; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+img { max-width: 100%; display: block; }
+::selection { background: color-mix(in srgb, var(--color-primary) 40%, transparent); color: #fff; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+
+@media (hover: hover) and (pointer: fine) {
+  body, a, button { cursor: none; }
+}
+
+/* ============================================================
+   AMBIENT LAYERS (particles / aurora / grain)
+============================================================ */
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.grain-layer {
+  background-image: radial-gradient(rgba(184, 148, 155, 0.07) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+/* ============================================================
+   CURSOR
+============================================================ */
+.cursor-dot, .cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+}
+.cursor-ring {
+  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+/* Toggled at runtime via classList — Tailwind's JIT never sees this
+   string literally, so it has to be authored as plain CSS. */
+.cursor-ring.hovering {
+  width: 60px;
+  height: 60px;
+  background: color-mix(in srgb, var(--color-highlight) 8%, transparent);
+  border-color: var(--color-accent);
+}
+
+/* ============================================================
+   GLASS
+============================================================ */
+.glass {
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ============================================================
+   REVEAL
+============================================================ */
+.reveal { opacity: 0; transform: translateY(34px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ============================================================
+   MISC COMPONENT HELPERS
+============================================================ */
+.grad-text {
+  background: linear-gradient(120deg, var(--color-highlight), var(--color-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.grad-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+.field-input:focus + label,
+.field-input:not(:placeholder-shown) + label {
+  top: -9px;
+  font-size: 12px;
+  color: var(--color-accent);
+  background: var(--color-card);
+}
