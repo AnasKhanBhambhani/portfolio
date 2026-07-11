@@ -1,16 +1,23 @@
-# React + Vite
+# Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Muhammad Anas — full-stack engineer portfolio. React 19 + Vite, Tailwind CSS v4, deployed on Vercel.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+npm install
+npm run dev
+```
 
-## React Compiler
+## Contact form
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The contact form sends email via a Vercel serverless function (`api/contact.js`) using Nodemailer through Gmail SMTP. It needs two server-side environment variables set in the Vercel project (Settings → Environment Variables), **not** prefixed with `VITE_`:
 
-## Expanding the Oxlint configuration
+- `GMAIL_USER` — your Gmail address
+- `GMAIL_APP_PASSWORD` — a Google App Password (requires 2-Step Verification on the account): https://myaccount.google.com/apppasswords
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+See `.env.example` for local setup. Note: the plain Vite dev server does not run `/api` functions — use `vercel dev` to test the contact form locally.
+
+## Deploy
+
+Pushes to `main` auto-deploy via the connected Vercel Git integration.
