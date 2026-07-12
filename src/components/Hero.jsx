@@ -36,7 +36,7 @@ export default function Hero() {
           <Reveal
             as="div"
             delay={2}
-            className="font-display text-[clamp(20px,3vw,30px)] text-muted mt-2.5 h-[1.2em]"
+            className="font-display text-[clamp(20px,3vw,30px)] text-muted mt-2.5 min-h-[1.4em] leading-[1.3]"
           >
             I&apos;m a <span className="text-accent">{typed}</span>
             <span className="inline-block w-0.5 h-[1em] bg-accent ml-0.75 align-[-3px] animate-blink" />
