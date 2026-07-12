@@ -13,10 +13,10 @@ import Achievements from "./components/Achievements";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import ThemePicker from "./components/ThemePicker";
-import useCleanAnchors from "./hooks/useCleanAnchors";
+import useSectionRouter from "./hooks/useSectionRouter";
 
 function App() {
-  useCleanAnchors();
+  useSectionRouter();
 
   return (
     <>
