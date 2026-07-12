@@ -43,8 +43,8 @@ export const CAPABILITIES = [
   },
   {
     num: "03",
-    title: "Backend fundamentals",
-    body: "Node, Express and NestJS with MongoDB and PostgreSQL, built up through study and personal projects — enough to design APIs, model data, and work fluently with a backend team.",
+    title: "Full-stack when needed",
+    body: "Node, Express and NestJS with MongoDB and PostgreSQL — enough to design APIs, model data, take a feature end-to-end, and work fluently with a backend team.",
   },
   {
     num: "04",
@@ -65,7 +65,7 @@ export const STACK_GROUPS = [
 export const TIMELINE = [
   {
     date: "2023 —\nPresent",
-    role: "Frontend Engineer",
+    role: "Frontend-Focused Full-Stack Engineer",
     org: "Enigmatix · Onsite",
     bullets: [
       "Drive frontend delivery for a large-scale, AI-powered SEO SaaS platform, shipping production-grade features used by thousands of agencies.",
@@ -78,16 +78,17 @@ export const TIMELINE = [
   },
   {
     date: "2021 —\n2023",
-    role: "Frontend Engineer",
+    role: "Full-Stack Engineer",
     org: "Freelance · Remote",
     bullets: [
-      "Delivered frontend for international clients using React and Next.js, focusing on performance, scalability and UX.",
+      "Delivered frontend-led products for international clients using React and Next.js, focusing on performance, scalability and UX.",
+      "Took several projects full-stack building REST APIs on Node and Express, modelling data in MongoDB and PostgreSQL, and wiring authentication to deliver features end-to-end.",
       "Built and optimized SSR-based Next.js applications, improving SEO rankings and reducing initial load times by 30–40%.",
       "Implemented state management using Redux, MobX and React Query for complex, data-driven interfaces.",
-      "Integrated payment gateways (Stripe, PayPal) from the frontend — checkout flows, subscriptions and error/edge-case handling.",
+      "Integrated payment gateways (Stripe, PayPal) end-to-end — checkout flows, subscriptions, webhooks and secure transactions.",
       "Designed reusable component libraries using Ant Design, Bootstrap and SCSS, accelerating delivery across projects.",
     ],
-    tags: ["React", "Next.js", "Redux", "MobX", "Stripe", "PayPal"],
+    tags: ["React", "Next.js", "Node.js", "Express", "MongoDB", "Stripe"],
   },
   {
     date: "2019 —\n2021",

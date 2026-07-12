@@ -6,10 +6,10 @@ import useMagnetic from "../hooks/useMagnetic";
 import useTypewriter from "../hooks/useTypewriter";
 
 const ROLES = [
-  "Frontend Engineer",
+  "Frontend-Focused Full-Stack Developer",
   "React & Next.js Developer",
-  "Frontend-Focused Full-Stack Dev",
   "TypeScript & UI Engineer",
+  "Product-Minded Engineer",
 ];
 
 const CHIP_CLASS =
@@ -29,7 +29,7 @@ export default function Hero() {
             Open to new opportunities
           </Reveal>
 
-          <Reveal as="h1" delay={1} className="text-[clamp(44px,8vw,88px)] font-bold tracking-[-0.03em] font-display">
+          <Reveal as="h1" delay={1} className="text-[clamp(44px,8vw,88px)] leading-[1.02] font-bold tracking-[-0.03em] font-display">
             Muhammad <span className="grad-text">Anas</span>
           </Reveal>
 

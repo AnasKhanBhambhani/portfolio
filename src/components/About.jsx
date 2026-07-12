@@ -17,11 +17,11 @@ export default function About() {
           </Reveal>
 
           <Reveal as="p" delay={1} className={`${PARA} mb-4.5`}>
-            I am a frontend engineer React, Next.js and TypeScript are where I do my best
-            work currently building at Enigmatix, with several years before that split between
-            freelance and agency engagements shipping user-facing features for international
-            clients. I am quietly open to the next full-time role where I can do the same at a
-            larger scale.
+            I am a frontend-focused full-stack developer React, Next.js and TypeScript are
+            where I do my best work currently building at Enigmatix, with several years before
+            that split between freelance and agency engagements shipping products for
+            international clients frontend-led, and full-stack when a project needed it. I am
+            quietly open to the next full-time role where I can do the same at a larger scale.
           </Reveal>
           <Reveal as="p" delay={2} className={`${PARA} mb-4.5`}>
             Most of my work happens under contract, building and maintaining products I
@@ -33,8 +33,8 @@ export default function About() {
           <Reveal as="p" delay={3} className={PARA}>
             Day to day that means React, Next.js and TypeScript on the frontend with state,
             performance and reusable component systems as the constant focus backed by working
-            knowledge of Node, Express and NestJS and REST or GraphQL APIs, picked up through
-            study and my own full-stack projects. Enough to design an API, model data, and plug
+            knowledge of Node, Express and NestJS and REST or GraphQL APIs, from freelance
+            full-stack work and my own projects. Enough to design an API, model data, and plug
             into whatever process and tracker a team already runs on.
           </Reveal>
         </div>
