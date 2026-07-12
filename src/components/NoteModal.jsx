@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { IconClose } from "./icons";
-import { CHIP, EASE } from "../ui";
+import { IconClose, IconExternal } from "./icons";
+import { CHIP, EASE, BTN_SOLID } from "../ui";
 
 export default function NoteModal({ note, onClose }) {
   const closeBtnRef = useRef(null);
@@ -51,10 +51,35 @@ export default function NoteModal({ note, onClose }) {
         </button>
         {note && (
           <>
+            {note.shots && note.shots.length > 0 && (
+              <div className="mb-6 -mt-1 flex flex-col gap-3.5">
+                {note.shots.map((shot) => (
+                  <a
+                    key={shot.src}
+                    href={shot.src}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block overflow-hidden rounded-[14px] border border-white/10 bg-white/4"
+                  >
+                    <img
+                      src={shot.src}
+                      alt={shot.alt}
+                      loading="lazy"
+                      className={`w-full h-auto block transition-transform duration-500 ${EASE} group-hover:scale-[1.02]`}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
             <div className="font-display text-xs tracking-widest uppercase text-highlight mb-3">{note.domain}</div>
-            <h3 id="modalTitle" className="text-2xl font-semibold mb-4.5 pr-8">
+            <h3 id="modalTitle" className={`text-2xl font-semibold pr-8 ${note.client ? "mb-2" : "mb-4.5"}`}>
               {note.title}
             </h3>
+            {note.client && (
+              <p className="text-sm text-muted mb-4.5">
+                Client <b className="text-highlight font-semibold">{note.client}</b>
+              </p>
+            )}
             <p className="text-muted text-[15px] leading-[1.75] mb-5.5">{note.desc}</p>
             {note.bullets && (
               <ul className="mb-5.5 flex flex-col gap-3">
@@ -73,10 +98,19 @@ export default function NoteModal({ note, onClose }) {
                 </span>
               ))}
             </div>
-            <p className="font-display text-xs text-muted-2 border-t border-white/10 pt-4 leading-[1.6] tracking-wide">
-              <b className="text-heart">Client &amp; live link:</b> withheld under NDA. Happy to walk through
-              specifics on a call.
-            </p>
+            {note.link ? (
+              <div className="border-t border-white/10 pt-5">
+                <a href={note.link} target="_blank" rel="noreferrer" className={BTN_SOLID}>
+                  Visit live site
+                  <IconExternal />
+                </a>
+              </div>
+            ) : (
+              <p className="font-display text-xs text-muted-2 border-t border-white/10 pt-4 leading-[1.6] tracking-wide">
+                <b className="text-heart">Client &amp; live link:</b> withheld under NDA. Happy to walk through
+                specifics on a call.
+              </p>
+            )}
           </>
         )}
       </div>

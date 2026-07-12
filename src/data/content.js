@@ -128,9 +128,15 @@ export const FIELD_NOTES = [
   {
     domain: "Internal Tooling · Frontend",
     title: "Workforce Management System",
+    client: "Enigmatix",
     teaser: "Role-based UI for managing employees, attendance and day-to-day tasks.",
     desc: "Built the frontend for a web-based workforce management system covering employee records, role-based access UI, authentication flows, attendance tracking and task management on a Firebase backend. Focused on a scalable component architecture and a fully responsive, mobile-first UI so the tool held up equally well in the office and on the floor.",
     tech: ["React", "Firebase", "Redux", "Ant Design", "SCSS"],
+    link: "https://oms.enigmatix.co/login",
+    shots: [
+      { src: "/oms-dashboard.png", alt: "Workforce Management System — employee dashboard" },
+      { src: "/oms-login.png", alt: "Workforce Management System — login screen" },
+    ],
   },
   {
     domain: "Media · Frontend",

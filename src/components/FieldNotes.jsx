@@ -21,9 +21,9 @@ export default function FieldNotes() {
       <Reveal delay={2} className={`${GLASS_CARD} flex gap-3.5 p-5 items-start mb-9`}>
         <IconInfo className="w-4.5 h-4.5 text-accent flex-shrink-0 mt-0.5" />
         <p className="text-[13.5px] text-muted leading-[1.7]">
-          Almost everything I&apos;ve shipped was built for someone else, under NDA. I can&apos;t
-          share company names, logos or live links but I can walk through exactly how each of
-          these was built. Click a card to read the note.
+          Most of what I&apos;ve shipped was built for someone else, under NDA — so for those I
+          can&apos;t share company names, logos or live links, but I can walk through exactly how
+          each was built. Where a project is public, I&apos;ve linked it. Click a card to read the note.
         </p>
       </Reveal>
 
@@ -38,10 +38,21 @@ export default function FieldNotes() {
                 hover:shadow-[0_30px_70px_rgba(0,0,0,0.5)]`}
             >
               <div className="relative aspect-16/10 overflow-hidden bg-[repeating-linear-gradient(135deg,#1c0a10,#1c0a10_12px,#170810_12px,#170810_24px)] grid place-items-center">
-                <div className="absolute w-36 h-36 rounded-[28px] bg-linear-to-br from-primary/35 to-violet/25 blur-[2px] opacity-50 animate-float" />
-                <span className="relative font-display text-xs tracking-widest text-muted-2 uppercase px-4 text-center">
-                  {note.domain}
-                </span>
+                {note.shots?.[0] ? (
+                  <img
+                    src={note.shots[0].src}
+                    alt={note.shots[0].alt}
+                    loading="lazy"
+                    className={`absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 ${EASE} group-hover:scale-105`}
+                  />
+                ) : (
+                  <>
+                    <div className="absolute w-36 h-36 rounded-[28px] bg-linear-to-br from-primary/35 to-violet/25 blur-[2px] opacity-50 animate-float" />
+                    <span className="relative font-display text-xs tracking-widest text-muted-2 uppercase px-4 text-center">
+                      {note.domain}
+                    </span>
+                  </>
+                )}
                 <div
                   className={`absolute inset-0 bg-linear-to-t from-bg/95 via-bg/40 to-transparent opacity-0
                     group-hover:opacity-100 transition-opacity duration-400 ${EASE} flex items-end p-5`}
@@ -61,7 +72,10 @@ export default function FieldNotes() {
                     Engagement <b className="text-highlight font-semibold">Contract</b>
                   </span>
                   <span>
-                    Client <b className="text-heart font-semibold">Redacted</b>
+                    Client{" "}
+                    <b className={`font-semibold ${note.client ? "text-highlight" : "text-heart"}`}>
+                      {note.client || "Redacted"}
+                    </b>
                   </span>
                 </div>
               </div>
