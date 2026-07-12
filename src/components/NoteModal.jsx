@@ -56,6 +56,16 @@ export default function NoteModal({ note, onClose }) {
               {note.title}
             </h3>
             <p className="text-muted text-[15px] leading-[1.75] mb-5.5">{note.desc}</p>
+            {note.bullets && (
+              <ul className="mb-5.5 flex flex-col gap-3">
+                {note.bullets.map((b, i) => (
+                  <li key={i} className="relative pl-5 text-muted text-[14.5px] leading-[1.7]">
+                    <span className="absolute left-0 top-[0.7em] w-1.5 h-1.5 rounded-full bg-accent" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="flex flex-wrap gap-2 mb-5.5">
               {note.tech.map((t) => (
                 <span className={CHIP} key={t}>

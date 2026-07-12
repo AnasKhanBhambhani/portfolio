@@ -22,7 +22,7 @@ export default function FieldNotes() {
         <IconInfo className="w-4.5 h-4.5 text-accent flex-shrink-0 mt-0.5" />
         <p className="text-[13.5px] text-muted leading-[1.7]">
           Almost everything I&apos;ve shipped was built for someone else, under NDA. I can&apos;t
-          share company names, logos or live links — but I can walk through exactly how each of
+          share company names, logos or live links but I can walk through exactly how each of
           these was built. Click a card to read the note.
         </p>
       </Reveal>

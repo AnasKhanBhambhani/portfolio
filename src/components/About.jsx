@@ -17,23 +17,25 @@ export default function About() {
           </Reveal>
 
           <Reveal as="p" delay={1} className={`${PARA} mb-4.5`}>
-            I&apos;m a full-stack engineer currently building at Enigmatix, with several years
-            before that split between freelance and agency engagements — shipping features across
-            the entire stack, from database schema to the pixels people click on. I&apos;m
-            quietly open to the next full-time role where I can do the same at a larger scale.
+            I am a frontend engineer React, Next.js and TypeScript are where I do my best
+            work currently building at Enigmatix, with several years before that split between
+            freelance and agency engagements shipping user-facing features for international
+            clients. I am quietly open to the next full-time role where I can do the same at a
+            larger scale.
           </Reveal>
           <Reveal as="p" delay={2} className={`${PARA} mb-4.5`}>
             Most of my work happens under contract, building and maintaining products I
-            don&apos;t personally own. That&apos;s why the work below is intentionally light on
+            do not personally own. That&apos;s why the work below is intentionally light on
             names, logos and live links — what I can speak to in detail is{" "}
             <strong className="text-white font-semibold">how</strong> the work got done: the
             architecture calls, the trade-offs, the performance wins.
           </Reveal>
           <Reveal as="p" delay={3} className={PARA}>
-            Day to day that means React and Next.js on the frontend, Node, Express and NestJS on
-            the backend, MongoDB and PostgreSQL underneath, and REST or GraphQL tying it all
-            together — plus enough process discipline to plug into whatever tracker a team
-            already runs on.
+            Day to day that means React, Next.js and TypeScript on the frontend with state,
+            performance and reusable component systems as the constant focus backed by working
+            knowledge of Node, Express and NestJS and REST or GraphQL APIs, picked up through
+            study and my own full-stack projects. Enough to design an API, model data, and plug
+            into whatever process and tracker a team already runs on.
           </Reveal>
         </div>
 

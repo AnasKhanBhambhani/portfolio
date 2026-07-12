@@ -52,8 +52,8 @@ export default function Contact() {
             exceptional.
           </Reveal>
           <Reveal as="p" delay={2} className={`${SEC_LEDE} mb-7`}>
-            Looking for a full-stack engineer, or just want to say hi? My inbox is always open —
-            I&apos;ll get back to you within a day.
+            Looking for a frontend (or frontend-focused full-stack) engineer, or just want to
+            say hi? My inbox is always open I&apos;ll get back to you within a day.
           </Reveal>
 
           <Reveal delay={2} className="flex items-center gap-3.5 text-muted mb-4.5 min-w-0">

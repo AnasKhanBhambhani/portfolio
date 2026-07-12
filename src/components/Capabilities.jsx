@@ -10,10 +10,10 @@ export default function Capabilities() {
     <section id="capabilities" className={SECTION}>
       <Reveal className={TAG_HEAD}>Capabilities</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
-        Where I&apos;m usually brought in
+        What I bring to a team
       </Reveal>
       <Reveal as="p" delay={2} className={`${SEC_LEDE} mb-10`}>
-        Four ways teams have used me — often two or three at once.
+        Frontend first, with the range to go deeper when a team needs it.
       </Reveal>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">

@@ -6,10 +6,10 @@ import useMagnetic from "../hooks/useMagnetic";
 import useTypewriter from "../hooks/useTypewriter";
 
 const ROLES = [
-  "Full-Stack Engineer",
+  "Frontend Engineer",
   "React & Next.js Developer",
-  "Node.js & NestJS Engineer",
-  "Product-Minded Engineer",
+  "Frontend-Focused Full-Stack Dev",
+  "TypeScript & UI Engineer",
 ];
 
 const CHIP_CLASS =
@@ -43,9 +43,9 @@ export default function Hero() {
           </Reveal>
 
           <Reveal as="p" delay={3} className="text-muted text-[17px] max-w-120 mt-6.5 mb-8">
-            I own full-stack products end to end — React and Next.js on the frontend, Node,
-            Express and NestJS on the backend — and I&apos;m looking for a full-time team to bring
-            that ownership to.
+            I build the frontend of full-stack products React, Next.js and TypeScript, with
+            the backend fundamentals (Node, Express, databases) to work end to end and I am
+            looking for a full-time team to bring that to.
           </Reveal>
 
           <Reveal delay={4} className="flex gap-3.5 flex-wrap mb-8.5">
@@ -90,7 +90,7 @@ export default function Hero() {
 
           <span className={`${CHIP_CLASS} top-[6%] left-0 sm:left-[-6%] text-highlight`}>React</span>
           <span className={`${CHIP_CLASS} top-[42%] right-0 sm:right-[-14%] text-violet`}>Next.js</span>
-          <span className={`${CHIP_CLASS} bottom-[4%] left-[8%] sm:left-[6%] text-accent`}>Node.js</span>
+          <span className={`${CHIP_CLASS} bottom-[4%] left-[8%] sm:left-[6%] text-accent`}>TypeScript</span>
         </Reveal>
       </div>
 

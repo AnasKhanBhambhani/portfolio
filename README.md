@@ -1,6 +1,6 @@
 # Portfolio
 
-Muhammad Anas — full-stack engineer portfolio. React 19 + Vite, Tailwind CSS v4, deployed on Vercel.
+Muhammad Anas — frontend-focused full-stack engineer portfolio. React 19 + Vite, Tailwind CSS v4, deployed on Vercel.
 
 ## Development
 
