@@ -36,13 +36,13 @@ export default function Hero() {
           <Reveal
             as="div"
             delay={2}
-            className="font-display text-[clamp(20px,3vw,30px)] text-muted mt-2.5 min-h-[1.4em] leading-[1.3]"
+            className="font-display text-[clamp(20px,3vw,30px)] text-muted mt-2.5 min-h-[2.6em] leading-[1.3]"
           >
             I&apos;m a <span className="text-accent">{typed}</span>
             <span className="inline-block w-0.5 h-[1em] bg-accent ml-0.75 align-[-3px] animate-blink" />
           </Reveal>
 
-          <Reveal as="p" delay={3} className="text-muted text-[17px] max-w-120 mt-6.5 mb-8">
+          <Reveal as="p" delay={3} className="text-muted text-[17px] max-w-120 mt-3.5 mb-8">
             I build the frontend of full-stack products React, Next.js and TypeScript, with
             the backend fundamentals (Node, Express, databases) to work end to end and I am
             looking for a full-time team to bring that to.
