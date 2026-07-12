@@ -107,6 +107,7 @@ export const FIELD_NOTES = [
   {
     domain: "AI SaaS · Frontend",
     title: "AI-Powered SEO Platform",
+    engagement: "Full-time",
     teaser: "Frontend delivery for an AI-powered SEO SaaS serving 5,000+ agencies and 430K+ installations.",
     desc: "Drove frontend delivery for an AI-powered SEO SaaS platform serving 5,000+ agencies and 430K+ installations, shipping scalable, production-grade features used at scale.",
     bullets: [
@@ -121,26 +122,29 @@ export const FIELD_NOTES = [
   {
     domain: "EdTech · Frontend",
     title: "AI-Assisted Learning Platform",
+    engagement: "Freelance",
     teaser: "Core frontend for a platform where educators generate structured lessons from uploaded content.",
     desc: "Built the frontend for an EdTech platform where educators generate structured lessons from uploaded content. Implemented Next.js SSR for fast, SEO-friendly page loads, classroom creation and management flows, and a secure student enrollment UI. Real-time features — live updates, notifications and chat — were wired up on Firebase, with client state handled across Redux, React Query and MobX. Performance work (code-splitting, lazy loading, memoization) kept the experience fast during high-traffic events.",
     tech: ["Next.js", "React", "Redux", "React Query", "MobX", "Firebase", "Ant Design"],
   },
   {
     domain: "Internal Tooling · Frontend",
-    title: "Workforce Management System",
+    title: "Office Management System",
+    engagement: "Full-time",
     client: "Enigmatix",
     teaser: "Role-based UI for managing employees, attendance and day-to-day tasks.",
-    desc: "Built the frontend for a web-based workforce management system covering employee records, role-based access UI, authentication flows, attendance tracking and task management on a Firebase backend. Focused on a scalable component architecture and a fully responsive, mobile-first UI so the tool held up equally well in the office and on the floor.",
+    desc: "Built the frontend for a web-based office management system covering employee records, role-based access UI, authentication flows, attendance tracking and task management on a Firebase backend. Focused on a scalable component architecture and a fully responsive, mobile-first UI so the tool held up equally well in the office and on the floor.",
     tech: ["React", "Firebase", "Redux", "Ant Design", "SCSS"],
     link: "https://oms.enigmatix.co/login",
     shots: [
-      { src: "/oms-dashboard.png", alt: "Workforce Management System — employee dashboard" },
-      { src: "/oms-login.png", alt: "Workforce Management System — login screen" },
+      { src: "/oms-dashboard.png", alt: "Office Management System — employee dashboard" },
+      { src: "/oms-login.png", alt: "Office Management System — login screen" },
     ],
   },
   {
     domain: "Media · Frontend",
     title: "Content Publishing Platform",
+    engagement: "Freelance",
     teaser: "Scalable, markdown-based publishing UI for a content and blogging product.",
     desc: "Developed the frontend for a content publishing platform with markdown-based authoring so writers could create and manage posts efficiently. Wired up authentication and role-based authorization with Firebase to support protected content and multiple contributor roles, with an emphasis on a clean, distraction-free writing and reading experience.",
     tech: ["React", "Firebase", "Redux"],
@@ -148,6 +152,7 @@ export const FIELD_NOTES = [
   {
     domain: "E-commerce / SaaS · Frontend",
     title: "Payments & Checkout Experience",
+    engagement: "Freelance",
     teaser: "Integrated payment gateways and subscription flows across multiple client products.",
     desc: "Built the checkout and subscription UI and integrated Stripe and PayPal from the frontend across several client engagements. Handled the client-side of failed payments, plan upgrades and downgrades, and confirmation states, while keeping the checkout experience simple, fast and trustworthy for end users.",
     tech: ["React", "Stripe", "PayPal", "REST APIs"],
@@ -155,6 +160,7 @@ export const FIELD_NOTES = [
   {
     domain: "Productivity Tools · Frontend",
     title: "Browser Extension for Workflow Automation",
+    engagement: "Freelance",
     teaser: "Chrome extension (Manifest V3) built to streamline a repetitive in-browser workflow.",
     desc: "Designed and built a Chrome Extension using Manifest V3 to automate a repetitive, time-consuming browser workflow for a client's team. Focused on a lightweight footprint, reliable messaging between background and content scripts, and a simple popup UI that non-technical team members could use without training.",
     tech: ["JavaScript", "Chrome Extension APIs", "React"],
@@ -162,6 +168,7 @@ export const FIELD_NOTES = [
   {
     domain: "Personal · Full-Stack",
     title: "Full-Stack Practice Projects",
+    engagement: "Personal",
     teaser: "Self-built projects where I own the backend too — APIs, auth and databases.",
     desc: "To round out my frontend work, I build full-stack projects end-to-end on my own time: REST and GraphQL APIs on Node, Express and NestJS, data modelled in MongoDB and PostgreSQL, authentication and role-based access, all wired to a React or Next.js frontend. Not client work — this is how I keep my backend fundamentals sharp and stay fluent with the teams I build alongside.",
     tech: ["Node.js", "Express", "NestJS", "MongoDB", "PostgreSQL", "React", "Next.js"],

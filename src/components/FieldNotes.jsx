@@ -69,7 +69,7 @@ export default function FieldNotes() {
                 <p className="text-muted text-sm leading-[1.6] mb-4 flex-1">{note.teaser}</p>
                 <div className="flex items-center gap-5 pt-4 border-t border-white/8 text-[11px] font-display tracking-wide uppercase text-muted-2">
                   <span>
-                    Engagement <b className="text-highlight font-semibold">Contract</b>
+                    Engagement <b className="text-highlight font-semibold">{note.engagement || "Contract"}</b>
                   </span>
                   <span>
                     Client{" "}

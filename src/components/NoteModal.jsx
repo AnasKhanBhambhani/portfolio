@@ -37,7 +37,7 @@ export default function NoteModal({ note, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modalTitle"
-        className={`relative glass border border-white/12 rounded-[22px] max-w-140 w-full max-h-[82vh] overflow-y-auto
+        className={`modal-scroll relative glass border border-white/12 rounded-[22px] max-w-140 w-full max-h-[82vh] overflow-y-auto
           p-6 sm:p-9 shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition-transform duration-300 ${EASE}
           ${note ? "translate-y-0 scale-100" : "translate-y-3.5 scale-[0.98]"}`}
       >
