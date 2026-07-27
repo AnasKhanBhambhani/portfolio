@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node float.js)",
+      "Bash(node hero-stack.js)",
+      "Bash(node fullpage.js)",
+      "Bash(node verify2.js)",
+      "WebFetch(domain:www.redoyanulhaque.me)",
+      "Bash(handle.exe)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match \"chrome|node|vite\" } | Select-Object Id, ProcessName)",
+      "Bash(sed -i 's/4173/4174/g; s/profileSB/profileSB2/g' 'C:/Users/Mr Obsessed/AppData/Local/Temp/claude/c--Users-Mr-Obsessed-Desktop-portfolio/6003965a-eb77-4a66-a477-5185d0d54f73/scratchpad/cdp-test/scrollbar-check.js')",
+      "Bash(rm -rf 'C:/Users/Mr Obsessed/AppData/Local/Temp/claude/c--Users-Mr-Obsessed-Desktop-portfolio/6003965a-eb77-4a66-a477-5185d0d54f73/scratchpad/cdp-test/profileSB2')",
+      "Bash(node scrollbar-check.js)",
+      "Bash(find \"C:/Users/Mr Obsessed/Desktop/site-lens-handoff\" -type f 2>&1 | head -100)",
+      "Read(//c/Users/Mr Obsessed/Desktop/site-lens-handoff/**)",
+      "Bash(node sl.js)",
+      "Bash(grep -E \"^\\(400|500|600|700|index\\)\\\\.css$\")",
+      "Bash(taskkill //F //PID 22448)",
+      "Bash(rm -rf node_modules/.vite)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports'\\), indent=2\\)\\)\")"
+    ]
+  }
+}

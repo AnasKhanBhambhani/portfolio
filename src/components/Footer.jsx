@@ -4,7 +4,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 border-t border-white/10 py-12.5">
+    <footer className="relative z-10 border-t border-edge/10 py-12.5">
       <div className="flex justify-between items-center flex-wrap gap-6">
         <a href="#hero" className="font-display font-bold text-[19px] flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-[3px] grad-btn" />
@@ -15,7 +15,7 @@ export default function Footer() {
             <a
               key={item.href}
               href={item.href}
-              className="text-muted text-sm hover:text-white transition-colors duration-250"
+              className="text-muted text-sm hover:text-fg transition-colors duration-250"
             >
               {item.label}
             </a>

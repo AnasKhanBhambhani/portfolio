@@ -1,14 +1,15 @@
 import { useState } from "react";
 import Reveal from "./Reveal";
+import GlassCard from "./ui/GlassCard";
 import { CONTACT } from "../data/content";
 import { IconMail, IconWhatsapp, IconLinkedin, IconClock, IconSend } from "./icons";
-import { SECTION, TAG_HEAD, SEC_TITLE, SEC_LEDE, BTN_SOLID, GLASS_CARD, STATUS_DOT } from "../ui";
+import { SECTION, TAG_HEAD, SEC_TITLE, SEC_LEDE, BTN_SOLID, STATUS_DOT } from "../ui";
 
 const INFO_IC =
-  "w-10.5 h-10.5 rounded-[11px] bg-white/3 border border-white/10 text-highlight grid place-items-center " +
+  "w-10.5 h-10.5 rounded-[11px] bg-surface/3 border border-edge/10 text-highlight grid place-items-center " +
   "flex-shrink-0 [&_svg]:w-4.5 [&_svg]:h-4.5";
 const FIELD_INPUT =
-  "field-input w-full bg-white/3 border border-white/10 rounded-xl py-4 px-3.5 text-white text-[15px] " +
+  "field-input w-full bg-surface/3 border border-edge/10 rounded-xl py-4 px-3.5 text-fg text-[15px] " +
   "transition-colors duration-300 focus:outline-none focus:border-accent focus:bg-accent/4";
 const FIELD_LABEL = "absolute left-3.5 top-4 text-muted-2 text-[15px] pointer-events-none transition-all duration-200 px-1";
 
@@ -59,7 +60,7 @@ export default function Contact() {
           <Reveal delay={2} className="flex items-center gap-3.5 text-muted mb-4.5 min-w-0">
             <a
               href={`mailto:${CONTACT.email}`}
-              className="flex items-center gap-3.5 min-w-0 hover:text-white transition-colors duration-250"
+              className="flex items-center gap-3.5 min-w-0 hover:text-fg transition-colors duration-250"
             >
               <span className={INFO_IC}>
                 <IconMail />
@@ -73,7 +74,7 @@ export default function Contact() {
               href={`https://wa.me/${CONTACT.phoneIntl}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3.5 min-w-0 hover:text-white transition-colors duration-250"
+              className="flex items-center gap-3.5 min-w-0 hover:text-fg transition-colors duration-250"
             >
               <span className={INFO_IC}>
                 <IconWhatsapp />
@@ -87,7 +88,7 @@ export default function Contact() {
               href={CONTACT.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3.5 min-w-0 hover:text-white transition-colors duration-250"
+              className="flex items-center gap-3.5 min-w-0 hover:text-fg transition-colors duration-250"
             >
               <span className={INFO_IC}>
                 <IconLinkedin />
@@ -109,66 +110,70 @@ export default function Contact() {
           </Reveal>
         </div>
 
-        <Reveal as="form" delay={2} onSubmit={handleSubmit} className={`${GLASS_CARD} p-6 sm:p-8`}>
-          <div className="relative mb-5.5">
-            <input
-              id="cf-name"
-              type="text"
-              required
-              placeholder=" "
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={FIELD_INPUT}
-            />
-            <label htmlFor="cf-name" className={FIELD_LABEL}>
-              Your name
-            </label>
-          </div>
-          <div className="relative mb-5.5">
-            <input
-              id="cf-email"
-              type="email"
-              required
-              placeholder=" "
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={FIELD_INPUT}
-            />
-            <label htmlFor="cf-email" className={FIELD_LABEL}>
-              Email address
-            </label>
-          </div>
-          <div className="relative mb-5.5">
-            <textarea
-              id="cf-msg"
-              required
-              placeholder=" "
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className={`${FIELD_INPUT} resize-y min-h-30`}
-            />
-            <label htmlFor="cf-msg" className={FIELD_LABEL}>
-              Your message
-            </label>
-          </div>
-          <button
-            type="submit"
-            disabled={status === "sending"}
-            className={`${BTN_SOLID} w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0`}
-          >
-            {status === "sending" ? "Sending…" : "Send Message"}
-            <IconSend />
-          </button>
-          <p
-            className={`text-center mt-4 text-sm ${
-              status === "sent" ? "text-avail-text" : status === "error" ? "text-heart" : "text-muted-2"
-            }`}
-          >
-            {status === "sent" && "Message sent — I'll get back to you within a day."}
-            {status === "sending" && "Sending…"}
-            {status === "error" && "Something went wrong — please email me directly instead."}
-            {status === "idle" && "Sent straight to my inbox — nothing opens on your end."}
-          </p>
+        <Reveal as="form" delay={2} onSubmit={handleSubmit}>
+          <GlassCard className="w-full!">
+            <div className="p-6 sm:p-8">
+              <div className="relative mb-5.5">
+                <input
+                  id="cf-name"
+                  type="text"
+                  required
+                  placeholder=" "
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={FIELD_INPUT}
+                />
+                <label htmlFor="cf-name" className={FIELD_LABEL}>
+                  Your name
+                </label>
+              </div>
+              <div className="relative mb-5.5">
+                <input
+                  id="cf-email"
+                  type="email"
+                  required
+                  placeholder=" "
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={FIELD_INPUT}
+                />
+                <label htmlFor="cf-email" className={FIELD_LABEL}>
+                  Email address
+                </label>
+              </div>
+              <div className="relative mb-5.5">
+                <textarea
+                  id="cf-msg"
+                  required
+                  placeholder=" "
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className={`${FIELD_INPUT} resize-y min-h-30`}
+                />
+                <label htmlFor="cf-msg" className={FIELD_LABEL}>
+                  Your message
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className={`${BTN_SOLID} w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0`}
+              >
+                {status === "sending" ? "Sending…" : "Send Message"}
+                <IconSend />
+              </button>
+              <p
+                className={`text-center mt-4 text-sm ${
+                  status === "sent" ? "text-avail-text" : status === "error" ? "text-heart" : "text-muted-2"
+                }`}
+              >
+                {status === "sent" && "Message sent — I'll get back to you within a day."}
+                {status === "sending" && "Sending…"}
+                {status === "error" && "Something went wrong — please email me directly instead."}
+                {status === "idle" && "Sent straight to my inbox — nothing opens on your end."}
+              </p>
+            </div>
+          </GlassCard>
         </Reveal>
       </div>
     </section>

@@ -1,24 +1,40 @@
 @import "tailwindcss";
+@import "@fontsource/geist-sans/400.css";
+@import "@fontsource/geist-sans/500.css";
+@import "@fontsource/geist-sans/600.css";
+@import "@fontsource/geist-sans/700.css";
 
 /* ============================================================
    THEME
-   Near-black warm ground with a maroon → crimson → rust signal
-   palette. Space Grotesk carries display/structure, Inter carries
-   body copy.
+   Indigo → blue → violet signal palette on a light/dark-aware
+   ground. Every color below is a plain CSS variable, overridden
+   wholesale for light mode further down — components reference
+   the token (bg-fg, text-muted, border-edge, …), never a literal
+   black/white, so this block is the single place either theme
+   is defined. Geist Sans carries both display/structure and body
+   copy — one clean, modern, self-hosted family site-wide.
 ============================================================ */
 @theme {
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
+  --font-sans: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-display: "Geist Sans", -apple-system, sans-serif;
 
-  --color-bg: #0f0609;
-  --color-bg-2: #170a0d;
-  --color-card: #201014;
-  --color-card-2: #190c0f;
+  --color-bg: #000000;
+  --color-bg-2: #0c0c0c;
+  --color-card: #161616;
+  --color-card-2: #101010;
 
-  --color-primary: #9f1239;
-  --color-accent: #e11d48;
-  --color-violet: #9a3412;
-  --color-highlight: #fb7185;
+  /* Foreground text + white/black-relative tint tokens: these carry the
+     `bg-white/5`, `border-white/10`, `text-white`-style utilities so those
+     roles can flip in light mode (surface/edge become black-tinted on a
+     white page instead of white-tinted on black). */
+  --color-fg: #ffffff;
+  --color-surface: #ffffff;
+  --color-edge: #ffffff;
+
+  --color-primary: #4338ca;
+  --color-accent: #3b82f6;
+  --color-violet: #8b5cf6;
+  --color-highlight: #93c5fd;
 
   --color-muted: #cbd5e1;
   --color-muted-2: #8ea0bd;
@@ -29,8 +45,72 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-dot: pulse-dot 2s infinite;
   --animate-blink: blink 1s steps(2) infinite;
-  --animate-scrolldot: scrolldot 1.6s ease infinite;
   --animate-drift: drift 18s ease-in-out infinite;
+}
+
+/* Decorative-only tokens (not Tailwind utilities) for the .glass card
+   surface — kept separate from --color-surface/-edge because a light-mode
+   glass card should stay a bright white panel with a soft shadow, not
+   invert to a dark tint the way plain white/black-utility roles do. */
+:root {
+  --glass-sheen-a: rgba(255, 255, 255, 0.32);
+  --glass-sheen-b: rgba(255, 255, 255, 0.1);
+  --glass-base: rgba(255, 255, 255, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-shadow: rgba(0, 0, 0, 0.35);
+
+  /* Tech-stack video showcase: a dark scrim over the (inherently dark)
+     background video reads fine in dark mode, but the same dark scrim in
+     light mode turns the whole section into a jarring black slab. Light
+     mode washes the video with a bright scrim instead, so it reads as a
+     soft, light backdrop consistent with the rest of the page. */
+  --showcase-scrim: rgba(0, 0, 0, 0.35);
+  --showcase-scrim-edge: rgba(0, 0, 0, 0.6);
+  --tile-icon-dim: rgba(255, 255, 255, 0.4);
+}
+
+/* Light mode overrides — same token names, flipped values. Toggled via
+   `data-theme` on <html> (see useTheme hook); defaults to dark so a flash
+   of unstyled/wrong theme never shows before JS runs (the inline script in
+   index.html sets the attribute before first paint). */
+:root[data-theme="light"] {
+  /* A translucent WHITE fill over an already-white page is mathematically a
+     no-op (alpha-blending white onto white stays white) — the card interior
+     was reading as invisible, leaving only the border/shadow visible. The
+     fill has to be a tinted (dark, low-opacity) wash instead so it composites
+     to a visible light-gray surface; --glass-highlight stays white since a
+     bright top-edge catch-light still reads correctly on a gray card. */
+  --glass-sheen-a: rgba(15, 15, 20, 0.07);
+  --glass-sheen-b: rgba(15, 15, 20, 0.025);
+  --glass-base: rgba(15, 15, 20, 0.045);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(15, 15, 20, 0.32);
+  --glass-shadow: rgba(15, 15, 20, 0.18);
+
+  --showcase-scrim: rgba(255, 255, 255, 0.72);
+  --showcase-scrim-edge: rgba(255, 255, 255, 0.85);
+  --tile-icon-dim: rgba(15, 15, 20, 0.4);
+
+  --color-bg: #ffffff;
+  --color-bg-2: #f3f4f6;
+  --color-card: #ffffff;
+  --color-card-2: #f8fafc;
+
+  --color-fg: #0b0b0f;
+  --color-surface: #0b0b0f;
+  --color-edge: #0b0b0f;
+
+  --color-primary: #4338ca;
+  --color-accent: #2563eb;
+  --color-violet: #7c3aed;
+  --color-highlight: #3730a3;
+
+  --color-muted: #3f3f46;
+  --color-muted-2: #64748b;
+  --color-avail: #059669;
+  --color-avail-text: #047857;
+  --color-heart: #dc2626;
 }
 
 @keyframes float {
@@ -44,11 +124,6 @@
 }
 @keyframes blink {
   50% { opacity: 0; }
-}
-@keyframes scrolldot {
-  0% { opacity: 0; transform: translateY(-4px); }
-  40% { opacity: 1; }
-  80% { opacity: 0; transform: translateY(8px); }
 }
 @keyframes drift {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -77,13 +152,14 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0;
   background: var(--color-bg);
-  color: #ffffff;
+  color: var(--color-fg);
   font-family: var(--font-sans);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
-h1, h2, h3, h4 { margin: 0; font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; color: #fff; }
+h1, h2, h3, h4 { margin: 0; font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; color: var(--color-fg); }
 p { margin: 0; }
 a { color: inherit; text-decoration: none; }
 ul { list-style: none; margin: 0; padding: 0; }
@@ -92,57 +168,62 @@ img { max-width: 100%; display: block; }
 ::selection { background: color-mix(in srgb, var(--color-primary) 40%, transparent); color: #fff; }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
 
+/* Hide the native cursor ONLY while the custom cursor is actually mounted
+   (CustomCursor toggles .custom-cursor-active on <html>). Otherwise — e.g. the
+   /site-lens route, where CustomCursor isn't rendered — the native cursor must
+   stay visible, or the mouse disappears with nothing replacing it. */
 @media (hover: hover) and (pointer: fine) {
-  body, a, button { cursor: none; }
-}
-
-/* ============================================================
-   AMBIENT LAYERS (particles / aurora / grain)
-============================================================ */
-.aurora-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
-  will-change: transform;
-}
-.grain-layer {
-  background-image: radial-gradient(rgba(184, 148, 155, 0.07) 1px, transparent 1px);
-  background-size: 3px 3px;
+  html.custom-cursor-active body,
+  html.custom-cursor-active a,
+  html.custom-cursor-active button { cursor: none; }
 }
 
 /* ============================================================
    CURSOR
+   Gooey jellyfish-trail cursor — see CustomCursor.jsx. A chain of circles
+   chases the pointer with increasing lag; the SVG "goo" filter below merges
+   them into one continuous blob instead of discrete overlapping circles.
 ============================================================ */
-.cursor-dot, .cursor-ring {
+.cursor-goo-svg {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 9999;
   pointer-events: none;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: screen;
+  /* `difference` stays visible on ANY background (it inverts what's behind
+     it); `screen` blended into white/light areas — e.g. the About photo —
+     and the cursor vanished there. */
+  mix-blend-mode: difference;
 }
-.cursor-ring {
-  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease, border-color 0.25s ease;
-}
-/* Toggled at runtime via classList — Tailwind's JIT never sees this
-   string literally, so it has to be authored as plain CSS. */
-.cursor-ring.hovering {
-  width: 60px;
-  height: 60px;
-  background: color-mix(in srgb, var(--color-highlight) 8%, transparent);
-  border-color: var(--color-accent);
+.cursor-goo-group circle {
+  fill: var(--color-highlight);
 }
 
 /* ============================================================
    GLASS
 ============================================================ */
 .glass {
-  background: rgba(17, 24, 39, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(160deg, var(--glass-sheen-a), var(--glass-sheen-b) 60%), var(--glass-base);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 1px var(--glass-border),
+    0 8px 30px var(--glass-shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================================
+   TECH STACK GRID
+============================================================ */
+.tech-tile-icon {
+  color: var(--tile-icon-dim);
+  transition: color 0.35s ease;
+}
+.tech-tile:hover .tech-tile-icon,
+.tech-tile:focus-visible .tech-tile-icon {
+  color: var(--tile-color);
 }
 
 /* ============================================================

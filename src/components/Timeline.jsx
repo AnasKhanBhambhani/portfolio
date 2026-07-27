@@ -1,8 +1,12 @@
 import Reveal from "./Reveal";
+import GlassCard from "./ui/GlassCard";
+import useTimelineProgress from "../hooks/useTimelineProgress";
 import { TIMELINE } from "../data/content";
 import { SECTION, TAG_HEAD, SEC_TITLE, SEC_LEDE, CHIP } from "../ui";
 
 export default function Timeline() {
+  const trackRef = useTimelineProgress();
+
   return (
     <section id="timeline" className={SECTION}>
       <Reveal className={TAG_HEAD}>Career</Reveal>
@@ -10,43 +14,68 @@ export default function Timeline() {
         Experience
       </Reveal>
       <Reveal as="p" delay={2} className={`${SEC_LEDE} mb-11`}>
-        Five-plus years of shipping features people actually use, across contract and freelance
-        engagements.
+        Five-plus years of shipping features people actually use, across contract engagements.
       </Reveal>
 
-      <div className="relative">
-        <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-linear-to-b from-primary via-violet to-transparent" />
-        <div className="flex flex-col gap-11">
-          {TIMELINE.map((entry, i) => (
-            <Reveal delay={i + 1} key={`${entry.role}-${entry.date}`} className="relative pl-9">
-              <span className="absolute left-0 top-1 w-3.5 h-3.5 rounded-full bg-bg border-2 border-accent shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_12%,transparent)]" />
+      <div ref={trackRef} className="relative">
+        {/* base line */}
+        <div className="absolute left-4 lg:left-1/2 top-2 bottom-2 w-0.5 -translate-x-1/2 bg-edge/10" />
+        {/* scroll-filled line */}
+        <div
+          className="absolute left-4 lg:left-1/2 top-2 w-0.5 -translate-x-1/2 bg-linear-to-b from-primary to-accent"
+          style={{ height: "var(--tl-fill, 0px)" }}
+        />
+        {/* travelling dot */}
+        <div
+          className="absolute left-4 lg:left-1/2 w-3.5 h-3.5 -translate-x-1/2 rounded-full bg-accent shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-accent)_18%,transparent)]"
+          style={{ top: "var(--tl-dot-top, 8px)" }}
+        />
 
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1.5">
-                <div className="font-display text-xl font-semibold">
-                  {entry.role} · <span className="text-highlight font-medium">{entry.org}</span>
-                </div>
-                <div className="font-display text-[13px] text-muted-2 whitespace-nowrap">
-                  {entry.date.split("\n").join(" ")}
-                </div>
-              </div>
+        <div className="flex flex-col gap-12 lg:gap-16">
+          {TIMELINE.map((entry, i) => {
+            const isRight = i % 2 === 1;
+            return (
+              <Reveal
+                delay={Math.min(i + 1, 4)}
+                key={`${entry.role}-${entry.date}`}
+                className={`relative pl-12 lg:pl-0 lg:flex ${isRight ? "lg:justify-end" : "lg:justify-start"}`}
+              >
+                {/* static per-entry marker on the line, at this card's own position */}
+                <span className="absolute left-4 lg:left-1/2 top-1.5 w-3 h-3 -translate-x-1/2 rounded-full bg-bg border-2 border-accent" />
 
-              <ul className="flex flex-col gap-2 my-2.5 mb-3.5">
-                {entry.bullets.map((bullet) => (
-                  <li key={bullet} className="text-muted text-[15px] leading-[1.6]">
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
+                <GlassCard
+                  className={`w-full! lg:w-[calc(50%-2.75rem)]! ${isRight ? "lg:ml-11" : "lg:mr-11"}`}
+                >
+                  <div className="p-6 sm:p-7">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1.5">
+                      <div className="font-display text-xl font-semibold">
+                        {entry.role} · <span className="text-highlight font-medium">{entry.org}</span>
+                      </div>
+                      <div className="font-display text-[13px] text-muted-2 whitespace-nowrap">
+                        {entry.date.split("\n").join(" ")}
+                      </div>
+                    </div>
 
-              <div className="flex flex-wrap gap-2">
-                {entry.tags.map((tag) => (
-                  <span className={CHIP} key={tag}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </Reveal>
-          ))}
+                    <ul className="flex flex-col gap-2 my-2.5 mb-3.5">
+                      {entry.bullets.map((bullet) => (
+                        <li key={bullet} className="text-muted text-[15px] leading-[1.6]">
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex flex-wrap gap-2">
+                      {entry.tags.map((tag) => (
+                        <span className={CHIP} key={tag}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </GlassCard>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -1,30 +1,124 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+function hexToRgb(hex) {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function readAccentRgb() {
+  const value = getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim();
+  return hexToRgb(value || "#e11d48");
+}
 
 export default function Loader() {
   const [done, setDone] = useState(false);
+  const canvasRef = useRef(null);
+  const doneRef = useRef(false);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = setTimeout(() => setDone(true), reduced ? 0 : 1300);
+    const timer = setTimeout(() => setDone(true), reduced ? 0 : 1900);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    doneRef.current = done;
+  }, [done]);
+
+  // Small stars drifting upward and looping back in at the bottom once
+  // they exit the top — purely decorative, stops once the loader is dismissed.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rgb = readAccentRgb();
+    let raf;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let stars = [];
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    // Every star — including the very first batch — starts just below the
+    // bottom edge and streams upward, looping straight back to the bottom
+    // the instant it exits the top. The loader only shows for ~1.9s, so the
+    // stagger has to be small (a full screen-height head start would mean
+    // most stars never even reach the visible area in time) and the speed
+    // has to be fast enough to read as a clear upward stream, not a drift.
+    function makeStar() {
+      return {
+        x: Math.random() * width,
+        y: height + Math.random() * 80,
+        r: Math.random() * 2.2 + 1.6,
+        speed: Math.random() * 5 + 4,
+        alpha: Math.random() * 0.5 + 0.35,
+      };
+    }
+
+    function step() {
+      if (doneRef.current) return;
+      ctx.clearRect(0, 0, width, height);
+      for (const s of stars) {
+        s.y -= s.speed;
+        if (s.y < -8) Object.assign(s, makeStar());
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${s.alpha})`;
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(step);
+    }
+
+    resize();
+    stars = Array.from({ length: 90 }, () => makeStar());
+    step();
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-bg flex flex-col items-center justify-center gap-6.5 transition-[opacity,visibility] duration-700 ${
+      className={`fixed inset-0 z-100 bg-bg flex flex-col items-center justify-center gap-5 transition-[opacity,visibility] duration-700 ${
         done ? "opacity-0 invisible" : "opacity-100 visible"
       }`}
       aria-hidden={done}
     >
-      <div className="relative w-16 h-16">
-        <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-        <span className="absolute inset-2.25 rounded-full border-2 border-transparent border-t-accent animate-[spin_1.4s_linear_infinite_reverse]" />
-        <span className="absolute inset-4.5 rounded-full border-2 border-transparent border-t-violet animate-[spin_0.8s_linear_infinite]" />
+      <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
+
+      <div className="relative flex flex-col items-center gap-5 px-6 text-center">
+        <div className="font-display text-[clamp(28px,6vw,52px)] font-bold tracking-tight">
+          <span className="text-fg">Muhammad </span>
+          <span className="text-accent">Anas</span>
+        </div>
+
+        <div className="flex items-center gap-3 text-muted-2 text-[11px] tracking-[0.35em] uppercase">
+          <span className="w-8 h-px bg-edge/25" />
+          Personal Portfolio
+          <span className="w-8 h-px bg-edge/25" />
+        </div>
+
+        <div className="w-45 sm:w-60 h-px bg-edge/10 mt-1 overflow-hidden">
+          <div className="h-full bg-accent origin-left animate-[load_1.9s_ease_forwards]" />
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] tracking-[0.25em] uppercase mt-1">
+          <span className="text-accent font-semibold">Build.</span>
+          <span className="text-muted-2">Ship.</span>
+          <span className="text-muted-2">Iterate.</span>
+          <span className="text-muted-2">Repeat.</span>
+        </div>
       </div>
-      <div className="w-45 h-0.75 bg-white/8 rounded-full overflow-hidden">
-        <div className="h-full w-full origin-left grad-btn rounded-full animate-[load_1.3s_ease_forwards]" />
-      </div>
-      <div className="font-display text-[13px] tracking-[0.3em] text-muted-2 uppercase">Muhammad Anas</div>
     </div>
   );
 }

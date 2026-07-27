@@ -18,7 +18,7 @@ export const SEC_LEDE = "text-muted max-w-[560px] text-base leading-[1.6]";
 
 export const CHIP =
   "font-sans text-xs px-3 py-1.25 rounded-full bg-primary/8 border border-primary/20 text-muted " +
-  `transition-colors duration-250 ${EASE} hover:border-accent/50 hover:text-white`;
+  `transition-colors duration-250 ${EASE} hover:border-accent/50 hover:text-fg`;
 
 const BTN_BASE =
   "inline-flex items-center gap-2.25 px-6.5 py-3.5 rounded-[14px] font-semibold text-[15px] cursor-pointer " +
@@ -29,10 +29,10 @@ export const BTN_SOLID =
   "hover:shadow-[0_14px_50px_color-mix(in_srgb,var(--color-primary)_50%,transparent)] hover:-translate-y-0.5";
 
 export const BTN_LINE =
-  `${BTN_BASE} bg-white/4 border border-white/10 backdrop-blur-[10px] ` +
+  `${BTN_BASE} bg-surface/4 border-2 border-edge/30 text-fg backdrop-blur-[10px] ` +
   "hover:border-accent hover:bg-accent/6 hover:-translate-y-0.5";
 
 export const STATUS_DOT = "w-2 h-2 rounded-full bg-avail animate-pulse-dot flex-shrink-0";
 
 export const GLASS_CARD =
-  `glass border border-white/10 rounded-[18px] transition-[transform,border-color] duration-350 ${EASE}`;
+  `glass border border-edge/20 rounded-[18px] transition-[transform,border-color] duration-350 ${EASE}`;

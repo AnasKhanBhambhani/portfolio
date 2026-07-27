@@ -37,7 +37,7 @@ export default function NoteModal({ note, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modalTitle"
-        className={`modal-scroll relative glass border border-white/12 rounded-[22px] max-w-140 w-full max-h-[82vh] overflow-y-auto
+        className={`modal-scroll relative glass border-2 border-edge/25 rounded-[22px] max-w-140 w-full max-h-[82vh] overflow-y-auto
           p-6 sm:p-9 shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition-transform duration-300 ${EASE}
           ${note ? "translate-y-0 scale-100" : "translate-y-3.5 scale-[0.98]"}`}
       >
@@ -45,7 +45,7 @@ export default function NoteModal({ note, onClose }) {
           ref={closeBtnRef}
           aria-label="Close"
           onClick={onClose}
-          className="absolute top-5 right-5 w-9 h-9 grid place-items-center rounded-xl bg-white/5 border border-white/10 text-muted hover:text-white hover:border-accent [&_svg]:w-4 [&_svg]:h-4"
+          className="absolute top-5 right-5 w-9 h-9 grid place-items-center rounded-xl bg-surface/5 border border-edge/10 text-muted hover:text-fg hover:border-accent [&_svg]:w-4 [&_svg]:h-4"
         >
           <IconClose />
         </button>
@@ -59,7 +59,7 @@ export default function NoteModal({ note, onClose }) {
                     href={shot.src}
                     target="_blank"
                     rel="noreferrer"
-                    className="group block overflow-hidden rounded-[14px] border border-white/10 bg-white/4"
+                    className="group block overflow-hidden rounded-[14px] border border-edge/10 bg-surface/4"
                   >
                     <img
                       src={shot.src}
@@ -99,14 +99,14 @@ export default function NoteModal({ note, onClose }) {
               ))}
             </div>
             {note.link ? (
-              <div className="border-t border-white/10 pt-5">
+              <div className="border-t border-edge/10 pt-5">
                 <a href={note.link} target="_blank" rel="noreferrer" className={BTN_SOLID}>
                   Visit live site
                   <IconExternal />
                 </a>
               </div>
             ) : (
-              <p className="font-display text-xs text-muted-2 border-t border-white/10 pt-4 leading-[1.6] tracking-wide">
+              <p className="font-display text-xs text-muted-2 border-t border-edge/10 pt-4 leading-[1.6] tracking-wide">
                 <b className="text-heart">Client &amp; live link:</b> withheld under NDA. Happy to walk through
                 specifics on a call.
               </p>

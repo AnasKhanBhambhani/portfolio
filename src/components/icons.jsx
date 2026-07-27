@@ -128,23 +128,29 @@ export function IconLayers(props) {
   );
 }
 
-export function IconPalette(props) {
-  return (
-    <svg {...base} strokeWidth={1.7} {...props}>
-      <path d="M12 2a10 10 0 1 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.9 1.9-1.9H16a4 4 0 0 0 4-4c0-5-3.6-9.5-8-9.5z" />
-      <circle cx="7" cy="10" r="1" fill="currentColor" />
-      <circle cx="11.5" cy="6.5" r="1" fill="currentColor" />
-      <circle cx="16" cy="9" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function IconUsers(props) {
   return (
     <svg {...base} strokeWidth={1.7} {...props}>
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+export function IconSun(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  );
+}
+
+export function IconMoon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
     </svg>
   );
 }

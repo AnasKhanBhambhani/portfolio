@@ -77,21 +77,7 @@ export const TIMELINE = [
     tags: ["React", "TypeScript", "Next.js", "MobX", "Tailwind", "REST APIs"],
   },
   {
-    date: "2021 —\n2023",
-    role: "Full-Stack Engineer",
-    org: "Freelance · Remote",
-    bullets: [
-      "Delivered frontend-led products for international clients using React and Next.js, focusing on performance, scalability and UX.",
-      "Took several projects full-stack building REST APIs on Node and Express, modelling data in MongoDB and PostgreSQL, and wiring authentication to deliver features end-to-end.",
-      "Built and optimized SSR-based Next.js applications, improving SEO rankings and reducing initial load times by 30–40%.",
-      "Implemented state management using Redux, MobX and React Query for complex, data-driven interfaces.",
-      "Integrated payment gateways (Stripe, PayPal) end-to-end — checkout flows, subscriptions, webhooks and secure transactions.",
-      "Designed reusable component libraries using Ant Design, Bootstrap and SCSS, accelerating delivery across projects.",
-    ],
-    tags: ["React", "Next.js", "Node.js", "Express", "MongoDB", "Stripe"],
-  },
-  {
-    date: "2019 —\n2021",
+    date: "2019 —\n2023",
     role: "Frontend Developer",
     org: "Early career · local & small projects",
     bullets: [
@@ -122,7 +108,7 @@ export const FIELD_NOTES = [
   {
     domain: "EdTech · Frontend",
     title: "AI-Assisted Learning Platform",
-    engagement: "Freelance",
+    engagement: "Contract",
     teaser: "Core frontend for a platform where educators generate structured lessons from uploaded content.",
     desc: "Built the frontend for an EdTech platform where educators generate structured lessons from uploaded content. Implemented Next.js SSR for fast, SEO-friendly page loads, classroom creation and management flows, and a secure student enrollment UI. Real-time features — live updates, notifications and chat — were wired up on Firebase, with client state handled across Redux, React Query and MobX. Performance work (code-splitting, lazy loading, memoization) kept the experience fast during high-traffic events.",
     tech: ["Next.js", "React", "Redux", "React Query", "MobX", "Firebase", "Ant Design"],
@@ -144,7 +130,7 @@ export const FIELD_NOTES = [
   {
     domain: "Media · Frontend",
     title: "Content Publishing Platform",
-    engagement: "Freelance",
+    engagement: "Contract",
     teaser: "Scalable, markdown-based publishing UI for a content and blogging product.",
     desc: "Developed the frontend for a content publishing platform with markdown-based authoring so writers could create and manage posts efficiently. Wired up authentication and role-based authorization with Firebase to support protected content and multiple contributor roles, with an emphasis on a clean, distraction-free writing and reading experience.",
     tech: ["React", "Firebase", "Redux"],
@@ -152,7 +138,7 @@ export const FIELD_NOTES = [
   {
     domain: "E-commerce / SaaS · Frontend",
     title: "Payments & Checkout Experience",
-    engagement: "Freelance",
+    engagement: "Contract",
     teaser: "Integrated payment gateways and subscription flows across multiple client products.",
     desc: "Built the checkout and subscription UI and integrated Stripe and PayPal from the frontend across several client engagements. Handled the client-side of failed payments, plan upgrades and downgrades, and confirmation states, while keeping the checkout experience simple, fast and trustworthy for end users.",
     tech: ["React", "Stripe", "PayPal", "REST APIs"],
@@ -160,7 +146,7 @@ export const FIELD_NOTES = [
   {
     domain: "Productivity Tools · Frontend",
     title: "Browser Extension for Workflow Automation",
-    engagement: "Freelance",
+    engagement: "Contract",
     teaser: "Chrome extension (Manifest V3) built to streamline a repetitive in-browser workflow.",
     desc: "Designed and built a Chrome Extension using Manifest V3 to automate a repetitive, time-consuming browser workflow for a client's team. Focused on a lightweight footprint, reliable messaging between background and content scripts, and a simple popup UI that non-technical team members could use without training.",
     tech: ["JavaScript", "Chrome Extension APIs", "React"],
