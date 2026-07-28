@@ -50,6 +50,9 @@ export default function About() {
               src="/anas.jpg"
               alt="Muhammad Anas"
               className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}

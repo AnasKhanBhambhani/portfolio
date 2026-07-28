@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- LCP candidate: About's portrait renders immediately after Hero, so its
+         fetch needs to start from the initial HTML parse, not wait on JS. -->
+    <link rel="preload" as="image" href="/anas.jpg" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Muhammad Anas — frontend-focused full-stack developer specializing in React, Next.js and TypeScript, with Node, Express and database experience, shipping products under contract engagements." />
     <title>Muhammad Anas — Frontend-Focused Full-Stack Developer</title>

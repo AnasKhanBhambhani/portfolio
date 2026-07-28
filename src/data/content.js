@@ -123,8 +123,8 @@ export const FIELD_NOTES = [
     tech: ["React", "Firebase", "Redux", "Ant Design", "SCSS"],
     link: "https://oms.enigmatix.co/login",
     shots: [
-      { src: "/oms-dashboard.png", alt: "Office Management System — employee dashboard" },
-      { src: "/oms-login.png", alt: "Office Management System — login screen" },
+      { src: "/oms-dashboard.webp", alt: "Office Management System — employee dashboard" },
+      { src: "/oms-login.webp", alt: "Office Management System — login screen" },
     ],
   },
   {

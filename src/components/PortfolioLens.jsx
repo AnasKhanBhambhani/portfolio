@@ -29,6 +29,13 @@ const LINKS = [
   [1, 10], [1, 11], [2, 9], [3, 12], [5, 8], [6, 8], [4, 11], [7, 12], [5, 13],
 ];
 
+// Not prefetched automatically on page load (that chunk is 2MB+) — only
+// triggered by a real signal of intent to click through: hovering/focusing
+// the button below, or the earliest touch event on it. The dynamic import()
+// is deduped by the module loader, so this is harmless to fire more than
+// once (e.g. hover then click).
+const prefetchSiteLens = () => import("../site-lens/mount");
+
 export default function PortfolioLens() {
   const flipNavigate = useFlipNav();
 
@@ -71,7 +78,14 @@ export default function PortfolioLens() {
           <span className="text-xs uppercase tracking-[0.18em] text-muted-2">
             Live 3D graph · 2D graph · tree
           </span>
-          <button type="button" onClick={() => flipNavigate("/site-lens")} className={BTN_SOLID}>
+          <button
+            type="button"
+            onClick={() => flipNavigate("/site-lens")}
+            onMouseEnter={prefetchSiteLens}
+            onFocus={prefetchSiteLens}
+            onTouchStart={prefetchSiteLens}
+            className={BTN_SOLID}
+          >
             Open Visualization
             <IconArrowRight />
           </button>

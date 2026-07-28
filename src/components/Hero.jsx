@@ -1,10 +1,15 @@
+import { lazy, Suspense } from "react";
 import Reveal from "./Reveal";
 import ContactIcons from "./ContactIcons";
-import HeroCode from "./HeroCode";
 import { IconArrowRight } from "./icons";
 import { BTN_SOLID, BTN_LINE, STATUS_DOT } from "../ui";
 import useMagnetic from "../hooks/useMagnetic";
 import useTypewriter from "../hooks/useTypewriter";
+
+// Lazy: prism-react-renderer alone is ~33KB gzipped, and this widget is
+// decorative — splitting it out keeps it from delaying everything else in
+// the main bundle (the actual hero text/CTAs) from being ready to paint.
+const HeroCode = lazy(() => import("./HeroCode"));
 
 const ROLES = [
   "Frontend-Focused Full-Stack Developer",
@@ -73,7 +78,11 @@ export default function Hero() {
         </div>
 
         <Reveal delay={2} className="hidden lg:flex justify-end">
-          <HeroCode />
+          <Suspense
+            fallback={<div className="w-full max-w-115 h-132.5 rounded-2xl border border-edge/12 bg-card" />}
+          >
+            <HeroCode />
+          </Suspense>
         </Reveal>
       </div>
     </section>

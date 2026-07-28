@@ -4,23 +4,19 @@ import CustomCursor from "./components/CustomCursor";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import About from "./components/About";
-import Capabilities from "./components/Capabilities";
-import Timeline from "./components/Timeline";
-import FieldNotes from "./components/FieldNotes";
-import Achievements from "./components/Achievements";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
-import StackLens from "./components/StackLens";
-import TechStackShowcase from "./components/TechStackShowcase";
-import PortfolioLens from "./components/PortfolioLens";
 import { Tabs, TabsContents, TabsContent } from "./components/ui/animate-tabs";
 import { IconSun, IconMoon } from "./components/icons";
 import { FlipNavProvider } from "./context/FlipNavContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import useSectionRouter from "./hooks/useSectionRouter";
 
-const loadSiteLens = () => import("./site-lens/mount");
-const SiteLens = lazy(loadSiteLens);
+// Everything below About is one lazy chunk — see MainContent.jsx for why
+// About itself stays eager. Site Lens is its own lazy chunk regardless (2MB+,
+// only ever needed if the user actually opens it) and is NOT prefetched
+// automatically anymore — see PortfolioLens's hover/focus-triggered prefetch
+// instead, which only spends that bandwidth on real intent to click through.
+const MainContent = lazy(() => import("./components/MainContent"));
+const SiteLens = lazy(() => import("./site-lens/mount"));
 
 // Visible, clip-path-driven page reveal (see animate-tabs.jsx) — slower and
 // more deliberate than the primitive's small-tab-switch default so a full
@@ -88,17 +84,6 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  // Prefetch the Site Lens chunk (2MB+, heavy WebGL/graph libs) during idle
-  // time so it's already resolved by the time the user navigates there —
-  // otherwise the page-reveal animation plays against Suspense's empty black
-  // fallback and the real content just pops in afterward, unanimated.
-  useEffect(() => {
-    const idle = window.requestIdleCallback ?? ((cb) => window.setTimeout(cb, 1200));
-    const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout;
-    const id = idle(() => loadSiteLens());
-    return () => cancelIdle(id);
-  }, []);
-
   const navigate = useCallback(
     (nextPath) => {
       const target = normalizePath(nextPath);
@@ -132,20 +117,11 @@ function App() {
             <main id="main" className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">
               <Hero />
               <About />
-              <Capabilities />
-              <StackLens />
             </main>
 
-            <TechStackShowcase />
-
-            <main className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">
-              <Timeline />
-              <FieldNotes />
-              <Achievements />
-              <Contact />
-              <PortfolioLens />
-              <Footer />
-            </main>
+            <Suspense fallback={null}>
+              <MainContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="site-lens">
