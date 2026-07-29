@@ -2258,12 +2258,43 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
     // Limits are recomputed when the link-length slider rescales the layout.
     useEffect(() => {
       if (type !== 4 || !forceGraphsReady || !fgRef.current?.controls) return;
-      const controls = fgRef.current.controls() as {minDistance?: number; maxDistance?: number} | null;
+      const controls = fgRef.current.controls() as {
+        minDistance?: number; maxDistance?: number; enableZoom?: boolean;
+        touches?: {ONE?: number; TWO?: number};
+      } | null;
       if (!controls) return;
       const {min, max} = getCameraDistanceLimits3d(linkLengthValue);
       controls.minDistance = min;
       controls.maxDistance = max;
+      // Reinforce OrbitControls' own touch defaults (one-finger rotate, two-finger dolly+pan) —
+      // explicit rather than relying on the library default, since the native-pinch guard right
+      // below only pays off if OrbitControls itself is actually configured to treat two touches
+      // as a zoom gesture.
+      controls.enableZoom = true;
+      if (controls.touches) {
+        controls.touches.ONE = THREE.TOUCH.ROTATE;
+        controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+      }
     }, [type, forceGraphsReady, linkLengthValue, graphDataKey]);
+
+    // OrbitControls' own touchmove handler (three/examples/jsm/controls/OrbitControls.js) never
+    // calls event.preventDefault() — it relies entirely on the `touch-action: none` it sets on the
+    // renderer's canvas at connect() time to stop the browser from treating a two-finger gesture as
+    // native page pinch-zoom. On some mobile browsers/layouts that CSS hint alone loses the race, so
+    // the OS/browser zooms the whole page instead of the graph ever seeing a dolly gesture. Guard it
+    // explicitly: a native (non-passive) touchmove listener that preventDefaults only for multi-touch,
+    // so page pinch-zoom can never win here regardless of the touch-action timing, while one-finger
+    // touches (rotate/scroll) are left completely alone.
+    useEffect(() => {
+      if (type !== 4) return undefined;
+      const el = canvasWrapperRef.current;
+      if (!el) return undefined;
+      const blockNativePinchZoom = (event: TouchEvent) => {
+        if (event.touches.length > 1) event.preventDefault();
+      };
+      el.addEventListener('touchmove', blockNativePinchZoom, {passive: false});
+      return () => el.removeEventListener('touchmove', blockNativePinchZoom);
+    }, [type, graphDataKey]);
 
     useEffect(() => {
       if (!fgRef.current || !depthNodesData.nodes?.length) return;
@@ -2720,7 +2751,10 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
           <div
             id='3d-graph'
             ref={canvasWrapperRef}
-            className={getCanvasShellClass(theme)}
+            // touch-none (3D only): belt-and-suspenders alongside the touchmove guard below —
+            // stops the browser from ever treating a two-finger touch here as native page
+            // pinch-zoom, so the gesture is free to reach OrbitControls' own dolly handling.
+            className={classNames(getCanvasShellClass(theme), type === 4 && 'touch-none')}
             // react-force-graph only clears node hover via its own internal canvas raycasting
             // (a mousemove that ray-misses every node) — it never fires on a native leave event.
             // Moving off the canvas fast enough, or onto the settings-panel overlay stacked on

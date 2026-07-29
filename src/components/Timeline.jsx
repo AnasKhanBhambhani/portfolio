@@ -1,8 +1,44 @@
+import { useState } from "react";
 import Reveal from "./Reveal";
 import GlassCard from "./ui/GlassCard";
 import useTimelineProgress from "../hooks/useTimelineProgress";
 import { TIMELINE } from "../data/content";
 import { SECTION, TAG_HEAD, SEC_TITLE, SEC_LEDE, CHIP } from "../ui";
+import { IconUp } from "./icons";
+
+// Cards with more than this many bullets collapse to just this many by
+// default (+ a toggle) — on a narrow mobile column, 4-5 long bullets each
+// wrap across many lines and make the card feel bloated. Cards at or under
+// the threshold render with no toggle at all, unaffected.
+const COLLAPSE_THRESHOLD = 3;
+
+function TimelineBullets({ bullets }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = bullets.length > COLLAPSE_THRESHOLD;
+  const visible = expanded || !hasMore ? bullets : bullets.slice(0, COLLAPSE_THRESHOLD);
+
+  return (
+    <>
+      <ul className="flex flex-col gap-2 my-2.5 mb-3.5">
+        {visible.map((bullet) => (
+          <li key={bullet} className="text-muted text-[15px] leading-[1.6]">
+            {bullet}
+          </li>
+        ))}
+      </ul>
+      {hasMore && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent mb-3.5 -mt-1"
+        >
+          {expanded ? "Show less" : `Show ${bullets.length - COLLAPSE_THRESHOLD} more`}
+          <IconUp className={`w-3 h-3 transition-transform duration-300 ${expanded ? "" : "rotate-180"}`} />
+        </button>
+      )}
+    </>
+  );
+}
 
 export default function Timeline() {
   const trackRef = useTimelineProgress();
@@ -56,13 +92,7 @@ export default function Timeline() {
                       </div>
                     </div>
 
-                    <ul className="flex flex-col gap-2 my-2.5 mb-3.5">
-                      {entry.bullets.map((bullet) => (
-                        <li key={bullet} className="text-muted text-[15px] leading-[1.6]">
-                          {bullet}
-                        </li>
-                      ))}
-                    </ul>
+                    <TimelineBullets bullets={entry.bullets} />
 
                     <div className="flex flex-wrap gap-2">
                       {entry.tags.map((tag) => (

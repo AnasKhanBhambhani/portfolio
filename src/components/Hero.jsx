@@ -25,7 +25,7 @@ export default function Hero() {
 
   return (
     <section id="hero" className="relative z-10 min-h-screen flex items-center pt-24">
-      <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center w-full">
         <div className="relative z-10 max-w-160 w-full">
           <Reveal className="inline-flex items-center gap-2.25 py-2 px-4 rounded-full bg-avail/8 border border-avail/30 text-avail-text text-[13px] font-medium mb-6.5">
             <span className={STATUS_DOT} />
@@ -77,7 +77,7 @@ export default function Hero() {
           </Reveal>
         </div>
 
-        <Reveal delay={2} className="hidden lg:flex justify-end">
+        <Reveal delay={2} className="flex justify-center lg:justify-end">
           <Suspense
             fallback={<div className="w-full max-w-115 h-132.5 rounded-2xl border border-edge/12 bg-card" />}
           >

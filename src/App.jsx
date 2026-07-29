@@ -4,7 +4,6 @@ import CustomCursor from "./components/CustomCursor";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import About from "./components/About";
-import { Tabs, TabsContents, TabsContent } from "./components/ui/animate-tabs";
 import { IconSun, IconMoon } from "./components/icons";
 import { FlipNavProvider } from "./context/FlipNavContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
@@ -17,11 +16,6 @@ import useSectionRouter from "./hooks/useSectionRouter";
 // instead, which only spends that bandwidth on real intent to click through.
 const MainContent = lazy(() => import("./components/MainContent"));
 const SiteLens = lazy(() => import("./site-lens/mount"));
-
-// Visible, clip-path-driven page reveal (see animate-tabs.jsx) — slower and
-// more deliberate than the primitive's small-tab-switch default so a full
-// page swap actually reads as an animation.
-const PAGE_TRANSITION = { type: "tween", duration: 0.6, ease: [0.16, 1, 0.3, 1] };
 
 function normalizePath(pathname) {
   return pathname.replace(/\/+$/, "") || "/";
@@ -95,43 +89,41 @@ function App() {
     [path],
   );
 
-  const activeTab = path === "/site-lens" ? "site-lens" : "main";
+  const isSiteLens = path === "/site-lens";
 
   return (
     <ThemeProvider>
     <FlipNavProvider value={navigate}>
-      <Tabs value={activeTab} onValueChange={(tab) => navigate(tab === "site-lens" ? "/site-lens" : "/")}>
-        <TabsContents transition={PAGE_TRANSITION}>
-          <TabsContent value="main">
-            <a
-              href="#main"
-              className="fixed left-3 -top-24 focus:top-3 z-1000 grad-btn text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-[top] duration-200"
-            >
-              Skip to content
-            </a>
+      {isSiteLens ? (
+        <>
+          <SiteLensTopBar onBack={() => navigate("/")} />
+          <Suspense fallback={<div className="min-h-screen bg-bg" />}>
+            <SiteLens />
+          </Suspense>
+        </>
+      ) : (
+        <>
+          <a
+            href="#main"
+            className="fixed left-3 -top-24 focus:top-3 z-1000 grad-btn text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-[top] duration-200"
+          >
+            Skip to content
+          </a>
 
-            <Loader />
-            <CustomCursor />
-            <Nav />
+          <Loader />
+          <CustomCursor />
+          <Nav />
 
-            <main id="main" className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">
-              <Hero />
-              <About />
-            </main>
+          <main id="main" className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">
+            <Hero />
+            <About />
+          </main>
 
-            <Suspense fallback={null}>
-              <MainContent />
-            </Suspense>
-          </TabsContent>
-
-          <TabsContent value="site-lens">
-            <SiteLensTopBar onBack={() => navigate("/")} />
-            <Suspense fallback={<div className="min-h-screen bg-bg" />}>
-              <SiteLens />
-            </Suspense>
-          </TabsContent>
-        </TabsContents>
-      </Tabs>
+          <Suspense fallback={null}>
+            <MainContent />
+          </Suspense>
+        </>
+      )}
     </FlipNavProvider>
     </ThemeProvider>
   );

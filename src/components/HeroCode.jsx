@@ -29,7 +29,7 @@ export default function HeroCode() {
       <CodeHeader icon={IconCode} copyButton>
         profile.js
       </CodeHeader>
-      <CodeBlock lang="js" writing duration={3.5} delay={0.4} cursor />
+      <CodeBlock lang="js" writing={false} />
     </Code>
   );
 }

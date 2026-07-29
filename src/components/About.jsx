@@ -8,7 +8,7 @@ const PARA = "text-muted text-base leading-[1.7]";
 export default function About() {
   return (
     <section id="about" className={SECTION}>
-      <div className="grid lg:grid-cols-2 gap-10 lg:gap-15 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-15 mb-10">
         <div>
           <Reveal className={TAG_HEAD}>About Me</Reveal>
           <Reveal as="h2" delay={1} className={`${SEC_TITLE} leading-[1.05]`}>

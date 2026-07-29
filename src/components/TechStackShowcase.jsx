@@ -57,21 +57,25 @@ export default function TechStackShowcase() {
         }}
       />
 
-      <div className="relative flex flex-col items-center gap-3 px-5">
+      <div className="relative flex flex-col items-center gap-2 px-3 sm:gap-3 sm:px-5">
         {TECH_ICON_ROWS.map((row, i) => (
-          <div key={i} className="flex flex-wrap justify-center gap-3">
-            {row.map(({ name, Icon, color }) => (
-              <div
+          <div key={i} className="flex flex-nowrap justify-center gap-1 sm:gap-2 md:gap-2.5 lg:gap-3">
+            {row.map(({ name, Icon, color, url }) => (
+              <a
                 key={name}
-                tabIndex={0}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={name}
+                aria-label={name}
                 style={{ "--tile-color": color }}
-                className="tech-tile group flex w-24 sm:w-28 flex-col items-center justify-center gap-2.5 rounded-xl border border-edge/10 bg-surface/5 px-2 py-4.5 text-center backdrop-blur-sm transition-colors duration-300 hover:border-edge/25 hover:bg-surface/10 focus-visible:border-edge/25 focus-visible:bg-surface/10 focus-visible:outline-none"
+                className="tech-tile group flex w-8 sm:w-12 md:w-16 lg:w-20 xl:w-24 shrink-0 flex-col items-center justify-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 rounded-lg lg:rounded-xl border border-edge/10 bg-surface/5 px-1 py-2 sm:px-1.5 sm:py-2.5 md:px-2 md:py-3.5 lg:py-4.5 text-center backdrop-blur-sm transition-colors duration-300 hover:border-edge/25 hover:bg-surface/10 focus-visible:border-edge/25 focus-visible:bg-surface/10 focus-visible:outline-none"
               >
-                <Icon className="tech-tile-icon h-7 w-7" />
-                <span className="text-[11px] text-muted-2 transition-colors duration-300 group-hover:text-fg">
+                <Icon className="tech-tile-icon h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
+                <span className="hidden md:block text-[10px] lg:text-[11px] text-muted-2 transition-colors duration-300 group-hover:text-fg">
                   {name}
                 </span>
-              </div>
+              </a>
             ))}
           </div>
         ))}
