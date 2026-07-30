@@ -137,7 +137,7 @@ export default function Graph2D() {
             }
 
             const fontSize = (isRoot ? 16 : isGroup ? 14 : 12) / globalScale;
-            ctx.font = `${isRoot || isGroup ? "600" : "400"} ${fontSize}px "Geist Sans", sans-serif`;
+            ctx.font = `${isRoot || isGroup ? "600" : "400"} ${fontSize}px "Manrope", sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "top";
             ctx.fillStyle = isGroup || isRoot ? "#f8fafc" : "#cbd5e1";

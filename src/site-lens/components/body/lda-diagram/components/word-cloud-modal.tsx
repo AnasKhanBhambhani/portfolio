@@ -52,7 +52,7 @@ const WordCloudModal: React.FC<WordCloudModalProps> = ({isOpen, onClose, topic, 
       .enter()
       .append('text')
       .style('font-size', d => `${d.size}px`)
-      .style('font-family', 'Geist Sans, Arial, sans-serif')
+      .style('font-family', 'Manrope, Arial, sans-serif')
       .style('font-weight', d => d.weight / maxWeight > 0.5 ? 'bold' : 'normal')
       .style('fill', d => colorScale(d.weight))
       .attr('text-anchor', 'middle')

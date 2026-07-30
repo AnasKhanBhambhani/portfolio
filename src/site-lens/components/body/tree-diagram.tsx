@@ -338,7 +338,7 @@ export const TreeDiagram = observer(({
             />
           </div>
         </>) :
-        (<div className="font-['Geist_Sans',sans-serif] text-sm">
+        (<div className="font-['Manrope',sans-serif] text-sm">
           <EmptyState className={isDark ? 'text-white' : 'text-[#1a1a1a]'} />
         </div>)
     )

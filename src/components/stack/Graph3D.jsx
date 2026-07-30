@@ -117,7 +117,7 @@ export default function Graph3D() {
             const sprite = new SpriteText(node.name);
             sprite.color = isGroup || isRoot ? "#f8fafc" : "#cbd5e1";
             sprite.textHeight = isRoot ? 7 : isGroup ? 6 : 4.5;
-            sprite.fontFace = "Geist Sans, sans-serif";
+            sprite.fontFace = "Manrope, sans-serif";
             sprite.fontWeight = isRoot || isGroup ? "600" : "400";
             sprite.material.depthWrite = false;
             sprite.position.set(0, -LABEL_OFFSET[node.kind], 0);

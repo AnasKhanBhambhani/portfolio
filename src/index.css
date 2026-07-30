@@ -1,8 +1,9 @@
 @import "tailwindcss";
-@import "@fontsource/geist-sans/400.css";
-@import "@fontsource/geist-sans/500.css";
-@import "@fontsource/geist-sans/600.css";
-@import "@fontsource/geist-sans/700.css";
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/manrope/800.css";
 
 /* ============================================================
    THEME
@@ -11,12 +12,12 @@
    wholesale for light mode further down — components reference
    the token (bg-fg, text-muted, border-edge, …), never a literal
    black/white, so this block is the single place either theme
-   is defined. Geist Sans carries both display/structure and body
+   is defined. Manrope carries both display/structure and body
    copy — one clean, modern, self-hosted family site-wide.
 ============================================================ */
 @theme {
-  --font-sans: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  --font-display: "Geist Sans", -apple-system, sans-serif;
+  --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-display: "Manrope", -apple-system, sans-serif;
 
   --color-bg: #000000;
   --color-bg-2: #0c0c0c;

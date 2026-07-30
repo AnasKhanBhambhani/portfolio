@@ -3030,7 +3030,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         </div>
       ) : (!dataLoader && !depthNodesData.nodes?.length) && (
         <div className='flex items-center justify-center min-h-[400px]' style={{backgroundColor: themeColors.bg}}>
-          <div className="font-['Geist_Sans',sans-serif] text-sm">
+          <div className="font-['Manrope',sans-serif] text-sm">
             <EmptyState className={theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'} />
           </div>
         </div>

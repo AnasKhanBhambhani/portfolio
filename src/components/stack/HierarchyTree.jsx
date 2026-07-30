@@ -37,7 +37,7 @@ function renderNode({ nodeDatum, toggleNode }) {
         fontSize={isRoot ? 16 : isGroup ? 13.5 : 12}
         fontWeight={isRoot || isGroup ? 600 : 500}
         letterSpacing="0.01em"
-        fontFamily="Geist Sans, system-ui, -apple-system, Segoe UI, sans-serif"
+        fontFamily="Manrope, system-ui, -apple-system, Segoe UI, sans-serif"
       >
         {nodeDatum.name}
       </text>

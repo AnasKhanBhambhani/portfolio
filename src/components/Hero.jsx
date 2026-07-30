@@ -26,7 +26,7 @@ export default function Hero() {
             Open to new opportunities
           </Reveal>
 
-          <Reveal as="h1" delay={1} className="text-[clamp(44px,8vw,88px)] leading-[1.02] font-bold tracking-[-0.03em] font-display">
+          <Reveal as="h1" delay={1} className="text-[clamp(36px,6vw,68px)] leading-[1.02] font-bold tracking-[-0.03em] font-display whitespace-nowrap">
             Muhammad <span className="grad-text">Anas</span>
           </Reveal>
 
@@ -73,24 +73,38 @@ export default function Hero() {
 
         <Reveal
           delay={2}
-          className="relative w-full h-105 sm:h-120 max-w-100 mx-auto lg:w-auto lg:h-auto lg:max-w-none lg:min-h-full lg:mx-0"
+          className="relative w-full max-w-120 sm:max-w-140 lg:max-w-150 aspect-square mx-auto lg:mx-0 flex items-center justify-center"
         >
-          <div className="absolute -inset-2.5 rounded-4xl bg-linear-to-br from-primary/30 to-violet/20 blur-xl opacity-60" />
-          <div className="absolute inset-0 rounded-[28px] overflow-hidden border border-edge/12 bg-card-2 shadow-[0_30px_70px_rgba(0,0,0,0.5)]">
-            <img
-              src="/anas.webp"
-              alt="Muhammad Anas"
-              className="absolute inset-0 w-full h-full object-cover"
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
+          <svg
+            className="absolute inset-0 w-full h-full scale-110"
+            style={{ filter: "blur(36px)" }}
+            viewBox="-100 -100 200 200"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="heroBlobGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--color-primary)" />
+                <stop offset="100%" stopColor="var(--color-violet)" />
+              </linearGradient>
+            </defs>
+            <path
+              fill="url(#heroBlobGradient)"
+              opacity="0.75"
+              d="M54.2,-62.6C68.4,-53.2,76.8,-34.6,79.4,-15.6C82,3.4,78.8,22.8,69.1,38.4C59.4,54,43.2,65.8,25.4,71.5C7.6,77.2,-11.8,76.8,-29.4,70.2C-47,63.6,-62.8,50.8,-71.4,34.4C-80,18,-81.4,-2,-75.6,-19.4C-69.8,-36.8,-56.8,-51.6,-41.4,-60.8C-26,-70,-13,-73.6,3.5,-79C20,-84.4,40,-72,54.2,-62.6Z"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-bg/60 via-transparent to-transparent" />
-            <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" />
-          </div>
+          </svg>
+          <img
+            src="/anas.webp"
+            alt="Muhammad Anas"
+            className="relative z-10 w-full h-full object-contain"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
         </Reveal>
       </div>
     </section>

@@ -112,7 +112,7 @@ export const GraphSettingsPanel: React.FC<IGraphSettingsPanelProps> = ({
       </div>
       <div className='flex flex-col gap-2 py-2'>
         <div className='flex flex-col gap-2 mb-3 last:mb-0'>
-          <span className={`font-['Geist_Sans',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Size nodes by</span>
+          <span className={`font-['Manrope',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Size nodes by</span>
           <SimpleTooltip title={sizes.find(o => o.value === sizeBy)?.label ?? sizeBy} placement='right' color='#000' open={isSizeDropdownOpen ? false : undefined}>
             <DropdownMenu onOpenChange={open => setIsSizeDropdownOpen(open)}>
               <DropdownMenuTrigger asChild>
@@ -142,7 +142,7 @@ export const GraphSettingsPanel: React.FC<IGraphSettingsPanelProps> = ({
 
         <div className='flex flex-col gap-2 mb-3 last:mb-0'>
           <SimpleTooltip title='Choose the metric that determines node colors'>
-            <span className={`inline-block font-['Geist_Sans',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Color nodes by</span>
+            <span className={`inline-block font-['Manrope',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Color nodes by</span>
           </SimpleTooltip>
           <SimpleTooltip title={COLOR_OPTIONS.find(o => o.value === colorBy)?.label ?? colorBy} placement='right' color='#000' open={isColorDropdownOpen ? false : undefined}>
             <DropdownMenu onOpenChange={open => setIsColorDropdownOpen(open)}>
@@ -185,7 +185,7 @@ export const GraphSettingsPanel: React.FC<IGraphSettingsPanelProps> = ({
 
         <div className='flex flex-col gap-2 mb-3 last:mb-0'>
           <div className='flex items-center justify-between'>
-            <span className={`font-['Geist_Sans',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Max Depth</span>
+            <span className={`font-['Manrope',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Max Depth</span>
             <span className='text-sm font-semibold text-brand-primary'>{expandToLevel}</span>
           </div>
           <Slider
@@ -200,11 +200,11 @@ export const GraphSettingsPanel: React.FC<IGraphSettingsPanelProps> = ({
 
       <div className='flex flex-col gap-3 mt-3'>
         <div className={NODES_ON_DRAG_CLASS}>
-          <span className={`shrink-0 font-['Geist_Sans',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Show labels</span>
+          <span className={`shrink-0 font-['Manrope',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Show labels</span>
           <Switch checked={showLabels} onCheckedChange={checked => setShowLabels(!!checked)} />
         </div>
         <div className={NODES_ON_DRAG_CLASS}>
-          <span className={`shrink-0 font-['Geist_Sans',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Fix nodes on drag</span>
+          <span className={`shrink-0 font-['Manrope',sans-serif] text-sm font-normal ${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'}`}>Fix nodes on drag</span>
           <Switch checked={nodesFixOnDrag} onCheckedChange={checked => handleNodesFixOnDrag(!!checked)} />
         </div>
       </div>

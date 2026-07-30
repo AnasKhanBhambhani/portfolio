@@ -122,7 +122,7 @@ export const getSettingsPanelExpandedClass = (isDark: boolean) => classNames(
 
 export const getResetButtonClass = (isDark: boolean) => classNames(
   'flex items-center justify-center gap-2 w-full h-[34px] rounded-lg border border-solid cursor-pointer',
-  `font-['Geist_Sans',sans-serif] text-[12.5px] font-semibold`,
+  `font-['Manrope',sans-serif] text-[12.5px] font-semibold`,
   isDark ? 'bg-[#1A1B24] border-[#24262F] text-[#A7A9B4]' : 'bg-[#F7F7FB] border-[#E6E6EA] text-[#4E5156]',
 );
 
