@@ -2293,7 +2293,21 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         if (event.touches.length > 1) event.preventDefault();
       };
       el.addEventListener('touchmove', blockNativePinchZoom, {passive: false});
-      return () => el.removeEventListener('touchmove', blockNativePinchZoom);
+
+      // iOS Safari recognizes pinch-zoom through its own proprietary Gesture Events
+      // (gesturestart/gesturechange/gestureend) — a completely separate pathway from
+      // touch events. Blocking touchmove alone stops Chrome/Android's native zoom but
+      // NOT Safari's, which can still zoom the whole page via this API regardless.
+      // No-op everywhere else (only iOS Safari ever fires these).
+      const blockGesture = (event: Event) => event.preventDefault();
+      el.addEventListener('gesturestart', blockGesture);
+      el.addEventListener('gesturechange', blockGesture);
+
+      return () => {
+        el.removeEventListener('touchmove', blockNativePinchZoom);
+        el.removeEventListener('gesturestart', blockGesture);
+        el.removeEventListener('gesturechange', blockGesture);
+      };
     }, [type, graphDataKey]);
 
     useEffect(() => {

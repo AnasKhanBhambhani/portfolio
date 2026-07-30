@@ -1,22 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
-// Chain of circles chasing the pointer with increasing lag, merged into one
-// continuous blob by an SVG "goo" filter (blur + a sharpened alpha curve).
-// At rest every point converges onto the same spot — reads as one simple
-// dot. While moving, the lag stretches the chain out behind the pointer, so
-// it spreads like a jellyfish trailing its tentacles in the direction of
-// travel. `mix-blend-mode: difference` keeps it visible over any background.
-const TRAIL_LENGTH = 7;
-const REST_RADIUS = 9;
-const HOVER_RADIUS = 15;
-// Kept just under ~2x the filter's blur stdDeviation so consecutive trail
-// circles are always close enough for the goo filter to visually bridge them
-// — without this, a fast mouse move spreads the lag chain out far enough
-// that the circles render as separate dots instead of one merged blob.
-const MAX_GAP = 22;
+// Simple custom cursor: one dot that smoothly eases toward the pointer and
+// grows slightly over interactive elements. `mix-blend-mode: difference`
+// keeps it visible over any background without needing per-frame color logic.
+const REST_SIZE = 18;
+const HOVER_SIZE = 32;
+const EASE = 0.35;
 
 export default function CustomCursor() {
-  const circleRefs = useRef([]);
+  const dotRef = useRef(null);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -37,44 +29,30 @@ export default function CustomCursor() {
   useEffect(() => {
     if (!enabled) return undefined;
 
-    const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    const points = Array.from({ length: TRAIL_LENGTH }, () => ({ x: mouse.x, y: mouse.y }));
+    const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const pos = { ...target };
     let hovering = false;
     let raf;
 
     function handleMove(e) {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
+      target.x = e.clientX;
+      target.y = e.clientY;
     }
     function handleOver(e) {
       hovering = Boolean(e.target.closest("a, button, [data-magnetic]"));
     }
 
     function loop() {
-      points[0].x += (mouse.x - points[0].x) * 0.5;
-      points[0].y += (mouse.y - points[0].y) * 0.5;
-      for (let i = 1; i < points.length; i++) {
-        points[i].x += (points[i - 1].x - points[i].x) * 0.42;
-        points[i].y += (points[i - 1].y - points[i].y) * 0.42;
+      pos.x += (target.x - pos.x) * EASE;
+      pos.y += (target.y - pos.y) * EASE;
 
-        const dx = points[i].x - points[i - 1].x;
-        const dy = points[i].y - points[i - 1].y;
-        const dist = Math.hypot(dx, dy);
-        if (dist > MAX_GAP) {
-          const ratio = MAX_GAP / dist;
-          points[i].x = points[i - 1].x + dx * ratio;
-          points[i].y = points[i - 1].y + dy * ratio;
-        }
+      const el = dotRef.current;
+      if (el) {
+        const size = hovering ? HOVER_SIZE : REST_SIZE;
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.transform = `translate3d(${pos.x - size / 2}px, ${pos.y - size / 2}px, 0)`;
       }
-
-      const baseRadius = hovering ? HOVER_RADIUS : REST_RADIUS;
-      circleRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const t = i / (points.length - 1);
-        el.setAttribute("cx", points[i].x);
-        el.setAttribute("cy", points[i].y);
-        el.setAttribute("r", baseRadius * (1 - t * 0.75));
-      });
 
       raf = requestAnimationFrame(loop);
     }
@@ -92,19 +70,5 @@ export default function CustomCursor() {
 
   if (!enabled) return null;
 
-  return (
-    <svg className="cursor-goo-svg" aria-hidden="true">
-      <defs>
-        <filter id="cursor-goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" />
-        </filter>
-      </defs>
-      <g className="cursor-goo-group" filter="url(#cursor-goo)">
-        {Array.from({ length: TRAIL_LENGTH }).map((_, i) => (
-          <circle key={i} ref={(el) => (circleRefs.current[i] = el)} r="0" />
-        ))}
-      </g>
-    </svg>
-  );
+  return <div ref={dotRef} className="cursor-dot" aria-hidden="true" />;
 }

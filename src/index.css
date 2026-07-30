@@ -187,24 +187,22 @@
 
 /* ============================================================
    CURSOR
-   Gooey jellyfish-trail cursor — see CustomCursor.jsx. A chain of circles
-   chases the pointer with increasing lag; the SVG "goo" filter below merges
-   them into one continuous blob instead of discrete overlapping circles.
+   Simple custom cursor — see CustomCursor.jsx. One dot that eases toward
+   the pointer and grows slightly over interactive elements.
 ============================================================ */
-.cursor-goo-svg {
+.cursor-dot {
   position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
+  top: 0;
+  left: 0;
+  border-radius: 9999px;
+  background: var(--color-highlight);
   pointer-events: none;
-  /* `difference` stays visible on ANY background (it inverts what's behind
-     it); `screen` blended into white/light areas — e.g. the About photo —
-     and the cursor vanished there. */
+  z-index: 9999;
+  /* `difference` keeps it visible over any background (it inverts whatever
+     is behind it) without needing per-frame color logic. */
   mix-blend-mode: difference;
-}
-.cursor-goo-group circle {
-  fill: var(--color-highlight);
+  transition: width 0.2s ease, height 0.2s ease;
+  will-change: transform;
 }
 
 /* ============================================================
