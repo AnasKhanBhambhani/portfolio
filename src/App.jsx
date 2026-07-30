@@ -3,14 +3,13 @@ import Loader from "./components/Loader";
 import CustomCursor from "./components/CustomCursor";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
-import About from "./components/About";
 import { IconSun, IconMoon } from "./components/icons";
 import { FlipNavProvider } from "./context/FlipNavContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import useSectionRouter from "./hooks/useSectionRouter";
 
-// Everything below About is one lazy chunk — see MainContent.jsx for why
-// About itself stays eager. Site Lens is its own lazy chunk regardless (2MB+,
+// Everything below Hero is one lazy chunk — see MainContent.jsx for why.
+// Site Lens is its own lazy chunk regardless (2MB+,
 // only ever needed if the user actually opens it) and is NOT prefetched
 // automatically anymore — see PortfolioLens's hover/focus-triggered prefetch
 // instead, which only spends that bandwidth on real intent to click through.
@@ -116,7 +115,6 @@ function App() {
 
           <main id="main" className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">
             <Hero />
-            <About />
           </main>
 
           <Suspense fallback={null}>

@@ -17,7 +17,7 @@ export const CONTACT = {
 };
 
 export const STATS = [
-  { count: 5, suffix: "+", label: "Years building frontends" },
+  { count: 4, suffix: "+", label: "Years building frontends" },
   { count: 15, suffix: "+", label: "Client projects shipped" },
   { count: 10, suffix: "+", label: "Core technologies" },
   { count: 100, suffix: "%", label: "Remote-ready" },
@@ -77,7 +77,7 @@ export const TIMELINE = [
     tags: ["React", "TypeScript", "Next.js", "MobX", "Tailwind", "REST APIs"],
   },
   {
-    date: "2019 —\n2023",
+    date: "2022 —\n2023",
     role: "Frontend Developer",
     org: "Early career · local & small projects",
     bullets: [

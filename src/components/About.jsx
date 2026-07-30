@@ -1,7 +1,12 @@
+import { lazy, Suspense } from "react";
 import Reveal from "./Reveal";
 import GlassCard from "./ui/GlassCard";
 import { FACTS } from "../data/content";
 import { SECTION, TAG_HEAD, SEC_TITLE } from "../ui";
+
+// Lazy, same as Hero's own usage — dynamic imports of the same module are
+// deduped by the loader, so this shares Hero's fetch rather than doubling it.
+const HeroCode = lazy(() => import("./HeroCode"));
 
 const PARA = "text-muted text-base leading-[1.7]";
 
@@ -40,26 +45,12 @@ export default function About() {
           </Reveal>
         </div>
 
-        <Reveal
-          delay={1}
-          className="relative w-full h-105 sm:h-120 max-w-100 mx-auto lg:w-auto lg:h-auto lg:max-w-none lg:min-h-full lg:mx-0"
-        >
-          <div className="absolute -inset-2.5 rounded-4xl bg-linear-to-br from-primary/30 to-violet/20 blur-xl opacity-60" />
-          <div className="absolute inset-0 rounded-[28px] overflow-hidden border border-edge/12 bg-card-2 shadow-[0_30px_70px_rgba(0,0,0,0.5)]">
-            <img
-              src="/anas.jpg"
-              alt="Muhammad Anas"
-              className="absolute inset-0 w-full h-full object-cover"
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-bg/60 via-transparent to-transparent" />
-            <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" />
-          </div>
+        <Reveal delay={1} className="flex items-center justify-center lg:justify-start">
+          <Suspense
+            fallback={<div className="w-full max-w-115 h-132.5 rounded-2xl border border-edge/12 bg-card" />}
+          >
+            <HeroCode />
+          </Suspense>
         </Reveal>
       </div>
 

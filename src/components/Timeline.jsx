@@ -50,7 +50,7 @@ export default function Timeline() {
         Experience
       </Reveal>
       <Reveal as="p" delay={2} className={`${SEC_LEDE} mb-11`}>
-        Five-plus years of shipping features people actually use, across contract engagements.
+        Four years of shipping features people actually use, across contract engagements.
       </Reveal>
 
       <div ref={trackRef} className="relative">

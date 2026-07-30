@@ -1,15 +1,9 @@
-import { lazy, Suspense } from "react";
 import Reveal from "./Reveal";
 import ContactIcons from "./ContactIcons";
 import { IconArrowRight } from "./icons";
 import { BTN_SOLID, BTN_LINE, STATUS_DOT } from "../ui";
 import useMagnetic from "../hooks/useMagnetic";
 import useTypewriter from "../hooks/useTypewriter";
-
-// Lazy: prism-react-renderer alone is ~33KB gzipped, and this widget is
-// decorative — splitting it out keeps it from delaying everything else in
-// the main bundle (the actual hero text/CTAs) from being ready to paint.
-const HeroCode = lazy(() => import("./HeroCode"));
 
 const ROLES = [
   "Frontend-Focused Full-Stack Developer",
@@ -77,12 +71,26 @@ export default function Hero() {
           </Reveal>
         </div>
 
-        <Reveal delay={2} className="flex justify-center lg:justify-end">
-          <Suspense
-            fallback={<div className="w-full max-w-115 h-132.5 rounded-2xl border border-edge/12 bg-card" />}
-          >
-            <HeroCode />
-          </Suspense>
+        <Reveal
+          delay={2}
+          className="relative w-full h-105 sm:h-120 max-w-100 mx-auto lg:w-auto lg:h-auto lg:max-w-none lg:min-h-full lg:mx-0"
+        >
+          <div className="absolute -inset-2.5 rounded-4xl bg-linear-to-br from-primary/30 to-violet/20 blur-xl opacity-60" />
+          <div className="absolute inset-0 rounded-[28px] overflow-hidden border border-edge/12 bg-card-2 shadow-[0_30px_70px_rgba(0,0,0,0.5)]">
+            <img
+              src="/anas.webp"
+              alt="Muhammad Anas"
+              className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-bg/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" />
+          </div>
         </Reveal>
       </div>
     </section>

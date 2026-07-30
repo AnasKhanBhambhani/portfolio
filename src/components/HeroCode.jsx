@@ -12,7 +12,7 @@ const PROFILE_CODE = `const profile = {
   hardWorker: true,
   quickLearner: true,
   problemSolver: true,
-  yearsOfExperience: 5,
+  yearsOfExperience: 4,
   hireable: function() {
     return (
       this.hardWorker &&
