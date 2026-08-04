@@ -2191,7 +2191,23 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
               // Must be a real THREE.Vector2 (not a plain {x,y} literal): OrbitControls both
               // reads .x/.y directly off this AND calls .set() on it internally (_trackPointer),
               // so a plain object satisfies the first caller but throws on the second.
-              get: (target: Record<string, unknown>, key: string) => target[key] ?? new THREE.Vector2(0, 0),
+              //
+              // The fallback MUST be memoized back onto the target, not returned fresh each
+              // read. _trackPointer only persists a position when the lookup returns
+              // `undefined`:
+              //     let position = this._pointerPositions[id];
+              //     if (position === undefined) { position = new Vector2(); this._pointerPositions[id] = position; }
+              //     position.set(event.pageX, event.pageY);
+              // A non-memoizing trap never returns `undefined`, so that `if` never runs, the
+              // Vector2 is never stored, and `.set()` mutates a throwaway object — leaving the
+              // map permanently empty. Two-finger gestures then measure the pinch distance
+              // against (0,0) instead of the other finger, so the dolly ratio goes wild and the
+              // camera flies off (the graph appears to vanish). Storing it keeps the crash
+              // safety AND lets `.set()` mutate the real, tracked entry.
+              get: (target: Record<string, unknown>, key: string) => {
+                if (target[key] === undefined) target[key] = new THREE.Vector2(0, 0);
+                return target[key];
+              },
             });
             controls.__siteLensPointerSafetyPatched = true;
           }

@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import Loader from "./components/Loader";
-import CustomCursor from "./components/CustomCursor";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import { IconSun, IconMoon } from "./components/icons";
@@ -110,7 +109,6 @@ function App() {
           </a>
 
           <Loader />
-          <CustomCursor />
           <Nav />
 
           <main id="main" className="max-w-295 mx-auto px-5 sm:px-7 lg:px-8 overflow-x-clip">

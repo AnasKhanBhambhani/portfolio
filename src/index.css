@@ -176,36 +176,6 @@
   :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
 }
 
-/* Hide the native cursor ONLY while the custom cursor is actually mounted
-   (CustomCursor toggles .custom-cursor-active on <html>). Otherwise — e.g. the
-   /site-lens route, where CustomCursor isn't rendered — the native cursor must
-   stay visible, or the mouse disappears with nothing replacing it. */
-@media (hover: hover) and (pointer: fine) {
-  html.custom-cursor-active body,
-  html.custom-cursor-active a,
-  html.custom-cursor-active button { cursor: none; }
-}
-
-/* ============================================================
-   CURSOR
-   Simple custom cursor — see CustomCursor.jsx. One dot that eases toward
-   the pointer and grows slightly over interactive elements.
-============================================================ */
-.cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  border-radius: 9999px;
-  background: var(--color-highlight);
-  pointer-events: none;
-  z-index: 9999;
-  /* `difference` keeps it visible over any background (it inverts whatever
-     is behind it) without needing per-frame color logic. */
-  mix-blend-mode: difference;
-  transition: width 0.2s ease, height 0.2s ease;
-  will-change: transform;
-}
-
 /* ============================================================
    GLASS
 ============================================================ */
@@ -213,9 +183,18 @@
   background: linear-gradient(160deg, var(--glass-sheen-a), var(--glass-sheen-b) 60%), var(--glass-base);
   -webkit-backdrop-filter: blur(32px) saturate(180%);
   backdrop-filter: blur(32px) saturate(180%);
+  /* Order matters: box-shadows paint first-listed-on-top. The border ring must
+     come FIRST so it wins on all four sides. The top-edge catch-light is a 2px
+     strip whose upper 1px the border paints over, leaving a 1px highlight just
+     INSIDE the top border.
+     Previously the highlight was listed first as a 1px strip — exactly the same
+     pixels as the border's top edge — so it erased the top border. Invisible in
+     dark mode (white highlight over a white-tinted border just looked brighter),
+     but in light mode a near-opaque white highlight over a dark border wiped the
+     top border out entirely, leaving cards bordered on only three sides. */
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
     inset 0 0 0 1px var(--glass-border),
+    inset 0 2px 0 var(--glass-highlight),
     0 8px 30px var(--glass-shadow);
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }

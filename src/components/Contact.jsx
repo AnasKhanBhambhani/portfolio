@@ -28,8 +28,13 @@ export default function Contact() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      // Parse defensively: /api/contact is a Vercel serverless function, so on
+      // any host that isn't running it (plain `vite dev`/`vite preview`, or a
+      // static deploy) this comes back as an empty 404 or an HTML fallback page.
+      // A bare res.json() throws on those, which surfaced as the same opaque
+      // "something went wrong" as a real send failure.
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
         setStatus("sent");
         setName("");
         setEmail("");

@@ -15,17 +15,30 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Google displays App Passwords as four space-separated groups
+    // ("abcd efgh ijkl mnop"), and pasting it verbatim — or picking up a stray
+    // trailing newline when setting the env var — makes Gmail reject the login
+    // with "535-5.7.8 Username and Password not accepted". Strip whitespace so
+    // the value works whether or not it was pasted in Google's display format.
+    const gmailUser = process.env.GMAIL_USER?.trim();
+    const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
+
+    if (!gmailUser || !gmailPass) {
+      res.status(500).json({
+        success: false,
+        error: "Email is not configured on the server (GMAIL_USER / GMAIL_APP_PASSWORD).",
+      });
+      return;
+    }
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
+      auth: { user: gmailUser, pass: gmailPass },
     });
 
     await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
+      from: `"Portfolio Contact" <${gmailUser}>`,
+      to: gmailUser,
       replyTo: email,
       subject: `New message from ${name} — via portfolio`,
       text: `${message}\n\n— ${name} (${email})`,
