@@ -18,7 +18,7 @@ export default function Hero() {
   const secondaryCta = useMagnetic(12);
 
   return (
-    <section id="hero" className="relative z-10 min-h-screen flex items-center pt-24">
+    <section id="hero" className="relative z-10 min-h-screen flex items-center pt-14 lg:pt-28">
       <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center w-full">
         <div className="relative z-10 max-w-160 w-full">
           <Reveal className="inline-flex items-center gap-2.25 py-2 px-4 rounded-full bg-avail/8 border border-avail/30 text-avail-text text-[13px] font-medium mb-6.5">

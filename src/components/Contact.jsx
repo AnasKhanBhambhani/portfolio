@@ -48,7 +48,7 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className={SECTION}>
+    <section id="contact" data-aos="zoom-in" className={SECTION}>
       <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-12.5 items-start">
         <div>
           <Reveal className={TAG_HEAD}>Get in Touch</Reveal>

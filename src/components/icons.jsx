@@ -58,6 +58,23 @@ export function IconArrowRight(props) {
   );
 }
 
+export function IconHome(props) {
+  return (
+    <svg {...base} strokeWidth={2.2} {...props}>
+      <path d="M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-6h5v6" />
+    </svg>
+  );
+}
+
+// Mirror of IconArrowRight, for "go back" affordances.
+export function IconArrowLeft(props) {
+  return (
+    <svg {...base} strokeWidth={2.2} {...props}>
+      <path d="M19 12H5M11 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
 export function IconSend(props) {
   return (
     <svg {...base} strokeWidth={2.2} {...props}>

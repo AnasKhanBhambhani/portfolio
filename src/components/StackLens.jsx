@@ -6,7 +6,7 @@ import { SECTION, TAG_HEAD, SEC_TITLE, SEC_LEDE } from "../ui";
 // so it isn't constrained by main's max-width/overflow-clip.
 export default function StackLens() {
   return (
-    <section id="stack" className={`${SECTION} pb-0!`}>
+    <section id="stack" data-aos="zoom-in" className={`${SECTION} pb-0!`}>
       <Reveal className={TAG_HEAD}>Stack</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         What I build with

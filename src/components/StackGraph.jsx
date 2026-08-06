@@ -19,7 +19,7 @@ export default function StackGraph() {
   const Active = active.Component;
 
   return (
-    <section id="stack" className={SECTION}>
+    <section id="stack" data-aos="zoom-in" className={SECTION}>
       <Reveal className={TAG_HEAD}>Stack</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         What I build with

@@ -10,7 +10,7 @@ export default function FieldNotes() {
   const [activeNote, setActiveNote] = useState(null);
 
   return (
-    <section id="fieldnotes" className={SECTION}>
+    <section id="fieldnotes" data-aos="zoom-in" className={SECTION}>
       <Reveal className={TAG_HEAD}>Selected Work</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         Field notes

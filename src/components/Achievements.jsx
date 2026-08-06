@@ -23,7 +23,7 @@ function StatCard({ stat, index }) {
 
 export default function Achievements() {
   return (
-    <section id="achievements" className={SECTION}>
+    <section id="achievements" data-aos="zoom-in" className={SECTION}>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
         {STATS.map((stat, i) => (
           <StatCard key={stat.label} stat={stat} index={i} />

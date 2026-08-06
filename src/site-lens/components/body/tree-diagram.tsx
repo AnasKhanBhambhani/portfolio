@@ -6,8 +6,6 @@ import {renderToString} from 'react-dom/server';
 import {EmptyState} from '@/shared/ui/composed/empty-state';
 import {ChevronDownIcon} from 'lucide-react';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from '@/shared/ui/dropdown-menu';
-import {getProgressColor} from '@/utils/colors';
-import {Checkbox} from '@/components/common-components/components/form/checkbox';
 import {useSiteLensDepthData} from '../../hooks/use-site-lens-depth-data';
 import type {ITreeDiagramProps, FilterMode, ITreeNode} from '../../types';
 import {TREE_DIRECTION_OPTIONS, DEPTH_COLORS} from '../../constants';
@@ -63,16 +61,6 @@ const treeItemLight = [
   'text-[#1a1a1a] focus:bg-[rgba(127,78,173,0.15)] focus:text-[#1a1a1a]',
 ].join(' ');
 
-const checkboxClasses = [
-  'mr-2.5',
-  '[&_.ant-checkbox-wrapper:hover]:border-brand-primary/30',
-  '[&_.ant-checkbox-checked_.ant-checkbox-inner]:bg-brand-primary',
-  '[&_.ant-checkbox-checked_.ant-checkbox-inner]:border-brand-primary/30',
-  '[&_.ant-checkbox-checked_.ant-checkbox-inner]:!rounded',
-  'focus:!border-brand-primary/30 focus:!shadow-none',
-  'hover:!border-brand-primary/30 hover:!shadow-none',
-].join(' ');
-
 export const TreeDiagram = observer(({
   theme,
   showWatermark = true,
@@ -85,7 +73,6 @@ export const TreeDiagram = observer(({
   metricRanges,
   metricBounds,
 }: ITreeDiagramProps) => {
-  const [showLabels, setShowLabels] = useState(false);
   const [direction, setDirection] = useState('horizontal');
   const themeColors = getThemeColors(theme);
   const isDark = theme === 'dark';
@@ -191,33 +178,24 @@ export const TreeDiagram = observer(({
       padding: 20,
       backgroundColor: themeColors.tooltipBg,
       formatter: function(item: any) {
+        // Only the hovered node's direct children — grandchildren are shown when
+        // the user hovers that child in turn. Nodes hidden by an active filter
+        // (symbolSize 0) are left out so the list matches what's drawn.
+        const children = ((item.data?.children ?? []) as ITreeNode[])
+          .filter(child => child && child.symbolSize !== 0);
+
         const element = (
-          <div>
-            <div className={`max-w-[400px] overflow-hidden text-ellipsis ${tooltipTextClass}`}>{item.name}</div>
-            <div><a className='block max-w-[400px] overflow-hidden text-ellipsis' href={item.data.url} target='_blank' rel='noreferrer'>{item.data.url}</a></div>
-            <div className={`flex justify-between ${tooltipTextClass}`}>
-              <div>
-                <div>Depth:</div>
-                <div>Health:</div>
-                <div>Issues:</div>
-                <div>Status:</div>
-              </div>
-              <div>
-                <div>{item.data.depth ?? '-'}</div>
-                <div className='flex items-center'>
-                  {item.data.pageHealth !== null && <div className='rounded-full h-[5px] mr-[5px] w-[5px]' style={{backgroundColor: getProgressColor(item.data.pageHealth * 100 || 0, 25, 50, 75)}}/>}
-                  <div>{item.data.pageHealth ?? '-' }</div>
-                </div>
-                <div className='flex items-center'>
-                  <div className='rounded-full h-[5px] mr-[5px] w-[5px]' style={{backgroundColor: item.data.issueCount ? '#F44343' : '#2AC155'}}/>
-                  <div>{item.data.issueCount || 'None' }</div>
-                </div>
-                <div className='flex items-center'>
-                  <div className='rounded-full h-[5px] mr-[5px] w-[5px]' style={{backgroundColor: item.data.status !== 'Active' ? '#F44343' : '#2AC155'}}/>
-                  <div>{item.data.status ?? '-' }</div>
-                </div>
-              </div>
-            </div>
+          <div className={`max-w-100 ${tooltipTextClass}`}>
+            <div className='font-semibold overflow-hidden text-ellipsis'>{item.name}</div>
+            {children.length > 0 ?
+              (<ul className='mt-2 max-h-60 overflow-y-auto list-disc pl-4'>
+                {children.map((child, index) => (
+                  <li key={child.id ?? index} className='overflow-hidden text-ellipsis whitespace-nowrap'>
+                    {child.name || child.url}
+                  </li>
+                ))}
+              </ul>) :
+              (<div className='mt-2 opacity-70'>No child pages</div>)}
           </div>);
         return renderToString(element);
       },
@@ -235,7 +213,7 @@ export const TreeDiagram = observer(({
         right: '20%',
         symbolSize: 7,
         label: {
-          show: showLabels,
+          show: false,
           position: 'left',
           verticalAlign: 'middle',
           align: 'right',
@@ -267,7 +245,7 @@ export const TreeDiagram = observer(({
         animationDurationUpdate: 750,
       },
     ],
-  }), [themeColors, processedTreeData, direction, showLabels, tooltipTextClass]);
+  }), [themeColors, processedTreeData, direction, tooltipTextClass]);
 
   // Use tooltip positioning hook to prevent viewport overflow
   useTooltipPositioning();
@@ -302,16 +280,6 @@ export const TreeDiagram = observer(({
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Checkbox
-                primary='light'
-                className={`${checkboxClasses} mt-0!`}
-                transparent={false}
-                checked={showLabels}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowLabels(e.target.checked)}
-                labelClassName={isDark ? 'text-white!' : 'text-[#1a1a1a]!'}
-              >
-                Show URL Paths
-              </Checkbox>
             </div>
           </div>
           <div className='relative flex-1 min-h-0'>

@@ -40,7 +40,7 @@ export default function PortfolioLens() {
   const flipNavigate = useFlipNav();
 
   return (
-    <section id="portfolio-lens" className={SECTION}>
+    <section id="portfolio-lens" data-aos="zoom-in" className={SECTION}>
       <Reveal className={TAG_HEAD}>Interactive Portfolio</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         Tech Visualization Preview

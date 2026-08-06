@@ -21,14 +21,12 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {
   faPlus, faMinus,
   faArrowsToDot,
-  faXmark,
 } from '@fortawesome/pro-regular-svg-icons';
 import * as d3 from 'd3-scale';
 import {useSiteLensDepthData} from '../../../../../hooks/use-site-lens-depth-data';
 import {getLocalStorageItem, setLocalStorageItem} from '@/utils/safe-localStorage';
 import {WATERMARK_CONFIG} from '@/utils/watermark';
 import {reportError} from '@/shared/error-boundary';
-import {sanitizeUrl} from '@/shared/security';
 import type {IGraphProps, TTheme} from '../../../../../types';
 import type {IDepthLink, IDepthNode} from '@/modules/site-audit/v1/api.types';
 import {MAX_SCALE, COLOR_OPTIONS, METRICS} from '../../../../../constants';
@@ -58,7 +56,8 @@ import {
   type IGraphExportEventDetail,
 } from './graph-utils';
 import {generateStarPositions, getStarfieldRadiusRange} from './graph-starfield';
-import {lightenColor, getColorByValue, getNodeColorBySummary, NO_DATA_COLOR} from './graph-color-utils';
+import {getNodeLogoTexture} from './graph-node-logos';
+import {lightenColor, getColorByValue, NO_DATA_COLOR} from './graph-color-utils';
 import {computeRadialLayout, computeSphericalLayout, buildSpanningTree, getEndpointId, getRingRadius} from './graph-layouts';
 import {getSelectionHighlightSet, isLinkHighlighted, type ISelectionLink} from './graph-selection-utils';
 import {useLayoutTransition} from './use-layout-transition';
@@ -71,9 +70,6 @@ import {
   getLegendWrapThemeClass,
   getLegendTitleClass,
   getLegendItemLabelClass,
-  getDetailDrawerWrapClass,
-  getDetailDrawerPanelClass,
-  getDetailStatTileClass,
 } from './graph-tailwind';
 import {GraphSettingsPanel} from './graph-settings-panel';
 import {useGraphForces} from './use-graph-forces';
@@ -130,18 +126,24 @@ const DEFAULT_NODE_RGB: [number, number, number] = [148, 148, 148];
 
 // react-force-graph defaults `nodeLabel` to the string 'name' when the prop is omitted, which
 // silently shows the library's own native hover tooltip (node.name). Passing this stable no-op
-// accessor explicitly suppresses it — our own hover card (built separately) is the only tooltip.
+// accessor explicitly suppresses it — the node's own label (drawn in-canvas, and expanded on
+// hover into a name + children list) is the only hover UI.
 const emptyNodeLabel = () => '';
 
 // Stable empty highlight set reused whenever no node is selected, so the memoized highlight value
 // keeps a constant identity (a fresh `new Set()` each render would needlessly re-run downstream memos).
 const EMPTY_HIGHLIGHT_SET: Set<number> = new Set();
 
-// How much the selection dims links/nodes that fall outside the highlighted branch, matching the
-// magnitude already used for the filter/search de-emphasis feature so the two dimming reasons agree.
-// Values match the reference design's own per-view dimming (2D canvas: 0.12, 3D/WebGL: 0.08).
+// How much an active FILTER dims the nodes/links it de-emphasises. Deliberately deep: a filtered-out
+// page is meant to recede almost completely.
 const SELECTION_DIM_OPACITY_2D = 0.12;
 const SELECTION_DIM_OPACITY_3D = 0.08;
+
+// How much CLICKING a node dims everything outside its branch. Much lighter than the filter dim
+// above: selecting is a "look here" gesture, not a filter, so the rest of the graph has to stay
+// legible around the focused branch instead of dropping out of sight. Set to 1 to disable entirely.
+const BRANCH_DIM_OPACITY_2D = 0.5;
+const BRANCH_DIM_OPACITY_3D = 0.55;
 
 // Hover info-card positioning: cursor offset and estimated card size used only for viewport clamping.
 // How long the canvas may go WITHOUT a simulation tick before we treat the layout as finished and
@@ -153,13 +155,18 @@ const GRAPH_SETTLE_IDLE_MS = 600;
 const GRAPH_SETTLE_HARD_CAP_MS = 2500;
 
 const HOVER_CARD_CURSOR_OFFSET = 14;
-const HOVER_CARD_EST_WIDTH = 220;
-const HOVER_CARD_EST_HEIGHT = 64;
+const HOVER_CARD_EST_WIDTH = 240;
+// Viewport-clamp estimates for the hover card's height: a fixed part (heading + padding) plus one
+// row per listed child. The card follows the cursor and can't scroll, so the child list is capped
+// and the remainder collapses into a "+N more" row.
+const HOVER_CARD_HEADING_HEIGHT = 46;
+const HOVER_CARD_ROW_HEIGHT = 19;
+const HOVER_CARD_MAX_CHILDREN = 8;
 
 /**
  * Derives the short title shown for a node: the last non-empty path segment of node.url, or 'index'
- * for the root. Mirrors the plain-text label derivation used for the 3D SpriteText and 2D canvas
- * labels; kept as a small isolated helper for the hover card so those two are left untouched.
+ * for the root. Used as the resting (un-hovered) label text and as the hover heading's fallback
+ * when a node carries no name.
  * @param {IDepthNode} node - a graph node with an optional `url`
  * @return {string} the slug/title text
  */
@@ -170,6 +177,7 @@ const getNodeUrlSlug = (node: IDepthNode): string => {
   const pathParts = pathString.split('/').filter((part: string) => part.length > 0);
   return pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'index';
 };
+
 
 /**
  * Parses a node color (hex #rrggbb or rgb()/rgba() string, both used across colorBy modes)
@@ -213,15 +221,37 @@ const GRAPH_ROTATION_CENTER = {x: 0, y: 0, z: 0};
 // deselected, auto-rotate stays paused briefly before resuming, instead of snapping back instantly.
 const ROTATE_RESUME_DELAY_MS = 2500;
 
+// Extra pull-back on top of the exact "everything just fits" distance, so the 3D view opens with
+// the whole graph comfortably inside the frame instead of pressed against its edges.
+const FIT_ZOOM_OUT_FACTOR_3D = 1.25;
+
+// Readiness polling for the one-shot 3D framing: how often to retry while the graph is still
+// mounting/expanding, how long to keep trying, and how close two consecutive fit distances must be
+// before the layout counts as settled (1%).
+const FRAME_READY_POLL_MS = 120;
+const FRAME_READY_MAX_ATTEMPTS = 40;
+const FRAME_STABLE_TOLERANCE = 0.01;
+
+// How long the 3D camera takes to fit the whole graph on load, and to fly to a clicked node.
+const FRAME_FLY_MS_3D = 700;
+const FOCUS_FLY_MS_3D = 1200;
+// How close the camera parks to the node it flew to — far enough that the node reads as the
+// foreground subject with the rest of the graph behind it, per depth tier (deeper = smaller node,
+// so the camera closes in more).
+const FOCUS_DISTANCE_BY_DEPTH_3D = [200, 150, 120];
+
 // Slowly-rotating starfield background for the 3D view. Values mirror the reference prototype:
 // 900 points on a spherical shell, a small screen-constant purple point sprite (sizeAttenuation
 // off so stars don't shrink with depth), theme-aware color/opacity.
 const STAR_COUNT = 900;
 const STAR_SIZE = 2.4;
 const STAR_COLOR_DARK = 0x9c8fd0;
-const STAR_COLOR_LIGHT = 0xb7abe0;
 const STAR_OPACITY_DARK = 0.5;
-const STAR_OPACITY_LIGHT = 0.18;
+// Light theme needs the inverse treatment: a pale lavender at 0.18 was invisible against a light
+// canvas, so the "stars" become deeper violet specks — same dotted texture, dark-on-light instead
+// of light-on-dark, and opaque enough to actually read.
+const STAR_COLOR_LIGHT = 0x6b52a3;
+const STAR_OPACITY_LIGHT = 0.42;
 
 // Per-frame Y-axis increment for the starfield background. Matches the reference prototype's
 // absolute value (~1/6th of the graph's own 0.0013 rad/frame auto-rotate) for a subtle parallax.
@@ -285,6 +315,9 @@ const NODE_BODY_TEXTURE_SIZE = 128;
 const NODE_BODY_CORE_OPACITY = 0.8;
 const NODE_BODY_CORE_RADIUS_RATIO = 0.7; // fraction of the radius that stays at full core opacity before feathering
 const NODE_BODY_DIAMETER_MULTIPLIER = 2; // sprite width/height = baseSize * this — matches the old sphere's visual footprint
+// Logos read as smaller than a filled disc of the same box (a lot of a logo's square is empty), so
+// they get a wider footprint than the plain body sprite to stay legible at the same node size.
+const NODE_LOGO_DIAMETER_MULTIPLIER = 3.2;
 let nodeBodyTexture: THREE.Texture | null = null;
 const getNodeBodyTexture = (): THREE.Texture => {
   if (nodeBodyTexture) return nodeBodyTexture;
@@ -384,6 +417,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
   // it can fire a hover-IN for a node the cursor has already left, re-applying a highlight our
   // onMouseLeave just cleared. handleNodeHover consults this flag to drop such stale hover-ins.
   const isPointerInsideCanvasRef = useRef<boolean>(false);
+  // Last known cursor position (client coords), kept current whether or not anything is hovered so
+  // the hover card can be placed the moment a hover is reported. See the tracking effect for why.
+  const cursorPosRef = useRef<{x: number; y: number} | null>(null);
   // Holds the latest updateNodeHighlight (defined further down, after createNodeLabel) so
   // handleNodeHover — declared earlier for readability — can call it without a temporal-dead-zone
   // ordering issue. Kept current via the effect right after updateNodeHighlight's definition.
@@ -394,7 +430,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
   // still forced a full node-object rebuild via this second path even after hoveredNode was
   // removed. Kept in sync by the effect right after highlightSet's own useMemo.
   const highlightSetRef = useRef<Set<number>>(new Set());
-  // Viewport-clamped cursor position (client coords) for the hover info-card. Null when nothing is
+  // Viewport-clamped cursor position (client coords) for the hover card. Null when nothing is
   // hovered or before the first mousemove; the card only renders when both this and hoveredNode are set.
   const [hoverCardPos, setHoverCardPos] = useState<{x: number; y: number} | null>(null);
   const [dataLoader, setDataLoader] = useState(true);
@@ -407,6 +443,13 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
   const settleWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settleHardCapRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const frameSettledGraphRef = useRef<() => void>(() => {});
+  // The `${type}-${graphDataKey}` the 3D camera has already been framed for. Makes 3D framing
+  // one-shot per graph load: nothing that happens afterwards (an engine stop provoked by a hover
+  // re-render, say) is allowed to move the camera again behind the user's back.
+  const hasFramed3dRef = useRef<string>('');
+  // The camera distance the last 3D fit aimed for. The orbit-distance ceiling is never allowed to
+  // drop below it, so a re-run of the limits effect can't undo a fit that is still in flight.
+  const fitDistance3dRef = useRef<number>(0);
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   // OTTO-1710: load ForceGraph libraries inside an effect so React knows when
   // they resolve. State trigger replaces the previous unguarded module-level
@@ -956,67 +999,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       }
     }
 
-    const handleClick = useCallback(
-      node => {
-        if (!node) {
-          setSelectedNodeDetail(null);
-          return;
-        }
-        if (node?.id !== undefined) {
-          setSearchNodeId(node.id);
-        }
-        setSelectedNodeDetail(node);
-
-        const nodeDistance = Math?.hypot(node?.x || 0, node?.y || 0, node?.z || 0);
-        const baseDistance = node?.depth === 0 ? 200 : node?.depth === 1 ? 150 : 120;
-        const minDistance = Math.max(baseDistance, nodeDistance * 0.5);
-        const distRatio = 1 + minDistance / Math.max(nodeDistance, 1);
-
-        fgRef.current.cameraPosition(
-          {
-            x: node.x * distRatio,
-            y: node.y * distRatio,
-            z: node.z * distRatio,
-          },
-          node,
-          2000,
-        );
-      },
-      [fgRef],
-    );
-    const handle2dClick = useCallback(
-      node => {
-        if (!node) {
-          setSelectedNodeDetail(null);
-          return;
-        }
-        if (node?.id !== undefined) {
-          setSearchNodeId(node.id);
-        }
-        setSelectedNodeDetail(node);
-
-        fgRef.current.centerAt(node.x, node.y, 1000);
-        fgRef.current.zoom(2, 2000);
-      },
-      [fgRef],
-    );
-    const focusSelectedNodeDetail = useCallback(() => {
-      if (!selectedNodeDetail) return;
-      if (type === 5) {
-        handle2dClick(selectedNodeDetail);
-      } else {
-        handleClick(selectedNodeDetail);
-      }
-    }, [selectedNodeDetail, type, handleClick, handle2dClick]);
-    const clearSelectedNodeDetail = useCallback(() => {
-      setSelectedNodeDetail(null);
-      setSearchNodeId(-1);
-    }, []);
-
-    // Selection-only counterpart of handleClick/handle2dClick: opens the detail popup and drives
-    // the branch highlight (via searchNodeId) WITHOUT moving the camera. Canvas clicks use this so a
-    // click only selects + highlights; zoom-on-select stays exclusive to the popup's "Focus node"
-    // button (which still calls handleClick/handle2dClick).
+    // Clicking a node records it and drives the branch highlight (via searchNodeId) WITHOUT moving
+    // the camera. There is no detail panel — a click only selects + highlights, and the camera-fly
+    // variants that the panel's "Focus node" button used were removed along with it.
     const selectNode = useCallback(node => {
       if (!node) {
         setSelectedNodeDetail(null);
@@ -1031,7 +1016,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
     const select2dNode = selectNode;
 
     // Drives the branch-highlight preview on hover. `node` is null when the cursor leaves all
-    // nodes (hover-off). Purely sets hover state — never touches the click-driven detail popup
+    // nodes (hover-off). Purely sets hover state — never touches the click-driven selection
     // (setSelectedNodeDetail) or search input.
     const handleNodeHover = useCallback((node: any) => {
       // Drop a stale hover-IN reported by the library's throttled raycast after the cursor has
@@ -1050,49 +1035,83 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       if (newId !== null) updateNodeHighlightRef.current(newId);
     }, []);
 
-    // Tracks the cursor for the hover info-card and clamps it inside the viewport so the card never
-    // spills off-screen. Estimated card dimensions are enough for a simple flip-to-other-side clamp.
-    const handleHoverCardMouseMove = useCallback((event: MouseEvent) => {
-      let x = event.clientX + HOVER_CARD_CURSOR_OFFSET;
-      let y = event.clientY + HOVER_CARD_CURSOR_OFFSET;
-      if (x + HOVER_CARD_EST_WIDTH > window.innerWidth) {
-        x = event.clientX - HOVER_CARD_EST_WIDTH - HOVER_CARD_CURSOR_OFFSET;
+    // Direct children of every node in the CURRENT filtered graph, keyed by parent id, for the
+    // hovered node's label. Parentage is resolved the same way convertGraphToTree resolves it for
+    // the tree diagram — the FIRST inbound link claims a node, later ones are cross-links — so the
+    // children a node lists here are exactly the ones it lists in the tree's tooltip. Endpoints may
+    // be raw ids or {id} refs once the engine has mutated them, hence getEndpointId on both.
+    const childNamesById = useMemo(() => {
+      const nameById = new Map<number, string>();
+      for (const node of (filteredGraphData.nodes ?? []) as IDepthNode[]) {
+        if (node?.id != null) nameById.set(node.id, node.name || getNodeUrlSlug(node));
       }
-      if (y + HOVER_CARD_EST_HEIGHT > window.innerHeight) {
-        y = event.clientY - HOVER_CARD_EST_HEIGHT - HOVER_CARD_CURSOR_OFFSET;
+      const map = new Map<number, string[]>();
+      const claimed = new Set<number>();
+      for (const link of filteredGraphData.links ?? []) {
+        const parentId = getEndpointId(link.source as number | {id: number});
+        const childId = getEndpointId(link.target as number | {id: number});
+        if (parentId == null || childId == null || claimed.has(childId)) continue;
+        const childName = nameById.get(childId);
+        if (childName == null) continue;
+        claimed.add(childId);
+        const siblings = map.get(parentId);
+        if (siblings) siblings.push(childName);
+        else map.set(parentId, [childName]);
       }
-      setHoverCardPos({x: Math.max(0, x), y: Math.max(0, y)});
-    }, []);
+      return map;
+    }, [filteredGraphData]);
 
-    // Only listen for mouse movement while a node is actually hovered (both 2D and 3D share
-    // hoveredNode), so we never track the cursor when nothing needs it. Scoped to the graph's own
-    // canvas container rather than document.body.
+    // The hovered node's direct children, as listed by the card. Capped at HOVER_CARD_MAX_CHILDREN
+    // (the card follows the cursor, so it can't scroll); `hidden` is what the "+N more" row reports.
+    const hoveredChildren = useMemo(() => {
+      const names = (hoveredNode?.id == null ? undefined : childNamesById.get(hoveredNode.id)) ?? [];
+      return {shown: names.slice(0, HOVER_CARD_MAX_CHILDREN), hidden: Math.max(0, names.length - HOVER_CARD_MAX_CHILDREN)};
+    }, [hoveredNode, childNamesById]);
+
+    // Rough rendered height of the card, used only to decide whether it should flip above the
+    // cursor near the bottom of the viewport.
+    const hoverCardEstHeight = useMemo(() => (
+      HOVER_CARD_HEADING_HEIGHT + Math.max(1, hoveredChildren.shown.length + (hoveredChildren.hidden > 0 ? 1 : 0)) * HOVER_CARD_ROW_HEIGHT
+    ), [hoveredChildren]);
+
+    // Places the card beside the cursor, flipped to the other side on either axis when it would
+    // otherwise spill out of the viewport.
+    const clampHoverCardPos = useCallback((clientX: number, clientY: number) => {
+      let x = clientX + HOVER_CARD_CURSOR_OFFSET;
+      let y = clientY + HOVER_CARD_CURSOR_OFFSET;
+      if (x + HOVER_CARD_EST_WIDTH > window.innerWidth) x = clientX - HOVER_CARD_EST_WIDTH - HOVER_CARD_CURSOR_OFFSET;
+      if (y + hoverCardEstHeight > window.innerHeight) y = clientY - hoverCardEstHeight - HOVER_CARD_CURSOR_OFFSET;
+      return {x: Math.max(0, x), y: Math.max(0, y)};
+    }, [hoverCardEstHeight]);
+
+    // Cursor tracking runs UNCONDITIONALLY, into a ref (no re-render), rather than being attached
+    // only once a node is hovered. react-force-graph reports hover from a throttled raycast, so it
+    // tells us about the hover some frames after the cursor arrived — by which point the pointer has
+    // usually stopped, precisely because the user is holding still waiting for a tooltip. A listener
+    // attached at that moment would sit there never receiving the event it needs to position the
+    // card, and nothing would appear. Remembering the last position instead means the card can be
+    // placed the instant the hover is reported. On window, so it works before the canvas mounts.
+    useEffect(() => {
+      if (!isBrowser()) return undefined;
+      const onMouseMove = (event: MouseEvent) => {
+        cursorPosRef.current = {x: event.clientX, y: event.clientY};
+        if (hoveredNodeIdRef.current != null) {
+          setHoverCardPos(clampHoverCardPos(event.clientX, event.clientY));
+        }
+      };
+      window.addEventListener('mousemove', onMouseMove, {passive: true});
+      return () => window.removeEventListener('mousemove', onMouseMove);
+    }, [clampHoverCardPos]);
+
+    // Show/hide the card as hover starts and stops, positioning it from the remembered cursor.
     useEffect(() => {
       if (!hoveredNode) {
         setHoverCardPos(null);
         return;
       }
-      const container = canvasWrapperRef.current;
-      if (!container) return;
-      container.addEventListener('mousemove', handleHoverCardMouseMove);
-      return () => {
-        container.removeEventListener('mousemove', handleHoverCardMouseMove);
-      };
-    }, [hoveredNode, handleHoverCardMouseMove]);
-
-    // In-degree of the hovered node within the CURRENT filtered graph: count links whose TARGET
-    // endpoint is this node. Recomputed only when the hovered node (or link set) changes — a cheap
-    // per-hover O(links) scan, no whole-graph in-degree map. Endpoints may be raw ids or {id} refs
-    // after the engine mutates them, so normalize both via getEndpointId (same as isLinkHighlighted).
-    const hoveredInboundCount = useMemo(() => {
-      if (hoveredNode == null || hoveredNode.id == null) return 0;
-      const targetId = hoveredNode.id;
-      let count = 0;
-      for (const link of filteredGraphData.links) {
-        if (getEndpointId(link.target as number | {id: number}) === targetId) count++;
-      }
-      return count;
-    }, [hoveredNode, filteredGraphData.links]);
+      const cursor = cursorPosRef.current;
+      setHoverCardPos(cursor ? clampHoverCardPos(cursor.x, cursor.y) : null);
+    }, [hoveredNode, clampHoverCardPos]);
 
     const saveSettings = (key, value) => {
       if (type === 5) {
@@ -1176,11 +1195,130 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       }
     };
 
+    // WHY A FIT USED TO DO NOTHING IN 3D.
+    //
+    // getCameraDistanceLimits3d caps the orbit at 2x the outer ring radius, but the distance
+    // zoomToFit asks for is larger than that — three-render-objects' fitToBbox solves
+    // maxBoxSide / atan(paddedFov) (≈3.3x the ring on a landscape canvas, and more as the canvas
+    // narrows, since it then divides by the aspect). OrbitControls clamped the camera back to
+    // maxDistance on its very next update(), so every fit — on load AND from the zoom-to-fit
+    // button — landed magnified and cropped.
+    //
+    // So the 3D fit is driven HERE instead of through zoomToFit: we solve the same distance the
+    // library would, lift maxDistance above it so the controls can't claw the camera back, and then
+    // place the camera ourselves along its current viewing direction. Doing the placement directly
+    // (the same way the zoom buttons do) means no second party can quietly veto the result.
+    // Ref-held because fitGraphToView is defined above the OrbitControls plumbing.
+    const fit3dCameraToGraph = useCallback((durationMs: number): number | null => {
+      const fg = fgRef.current;
+      const controls = fg?.controls?.() as {maxDistance?: number} | null | undefined;
+      const camera = fg?.camera?.() as {fov?: number; aspect?: number; position?: THREE.Vector3} | null | undefined;
+      const bbox = fg?.getGraphBbox?.() as Record<string, [number, number]> | null | undefined;
+      // bbox is null until the graph is initialised and nodes have coordinates — the caller retries
+      // (idle watchdog, hard cap, engine stop), so a miss here is expected on the earliest attempt.
+      if (!fg?.cameraPosition || !controls || !camera?.fov || !bbox) return null;
+
+      // fitToBbox measures every extent from the ORIGIN (it resets the aim to centre), so mirror
+      // that rather than using the bbox's own centre, or the two disagree on off-centre graphs.
+      const halfSpans = Object.values(bbox)
+        .filter(Array.isArray)
+        .map(([min, max]) => Math.max(Math.abs(min), Math.abs(max)));
+      if (!halfSpans.length) return null;
+      const maxBoxSide = Math.max(...halfSpans) * 2;
+      const padding = getFitPadding(graphWidth, graphHeight, FIT_PADDING_RATIO_3D);
+      const paddedFov = (1 - (padding * 2) / Math.max(graphHeight, 1)) * camera.fov;
+      const fitHeightDistance = maxBoxSide / Math.atan((paddedFov * Math.PI) / 180);
+      const distance = Math.max(fitHeightDistance, fitHeightDistance / (camera.aspect || 1)) * FIT_ZOOM_OUT_FACTOR_3D;
+      if (!Number.isFinite(distance) || distance <= 0) return null;
+
+      // Remember the distance the camera is being sent to, NOT where it is right now: the flight
+      // takes FRAME_FLY_MS_3D, and the orbit-limits effect can re-run at any point during it (the
+      // link length is recomputed from the loaded data, which lands in exactly that window). If that
+      // effect sized the ceiling from the camera's mid-flight position it would cap it below the
+      // destination, and OrbitControls would clamp the camera back in — the graph ending up
+      // half-zoomed no matter how correct the fit itself was.
+      fitDistance3dRef.current = distance;
+      // 5% of slack so floating-point drift in the tween's final frame can't land a hair outside
+      // the ceiling and get clamped anyway.
+      controls.maxDistance = Math.max(controls.maxDistance ?? 0, distance * 1.05);
+
+      // Keep the camera on its current bearing and only change how far out it sits, so a fit reads
+      // as a pull-back rather than a jump to some canonical angle. Length can be 0 on the very
+      // first frame, before any camera placement — fall back to looking down +z.
+      const position = camera.position;
+      const length = position ? Math.hypot(position.x, position.y, position.z) : 0;
+      const direction = length > 0.001 ?
+        {x: position!.x / length, y: position!.y / length, z: position!.z / length} :
+        {x: 0, y: 0, z: 1};
+
+      fg.cameraPosition(
+        {x: direction.x * distance, y: direction.y * distance, z: direction.z * distance},
+        GRAPH_ROTATION_CENTER,
+        durationMs,
+      );
+      return distance;
+    }, [fgRef, graphWidth, graphHeight]);
+
+    const fit3dCameraToGraphRef = useRef(fit3dCameraToGraph);
+    useEffect(() => {
+      fit3dCameraToGraphRef.current = fit3dCameraToGraph;
+    }, [fit3dCameraToGraph]);
+
+    // Identifies "this graph, in this view" — the unit of work the 3D framing runs exactly once for.
+    const frameToken = `${type}-${graphDataKey}`;
+
+    // WHY 3D FRAMING IS DRIVEN FROM HERE RATHER THAN THE SETTLE WATCHDOG.
+    //
+    // The shared watchdog arms two fixed timers at mount (600ms idle, 2.5s hard cap) and otherwise
+    // waits for onEngineStop. In 2D that's enough, because every engine tick re-arms the idle timer
+    // (onEngineTick -> stableOnEngineTick2d). 3D wires onEngineTick to the label-rescale hook
+    // instead, so nothing re-arms it — and both timers can easily expire before the lazily-imported
+    // ForceGraph3D has even mounted and initialised its scene. When that happened the view opened at
+    // the library's default camera, sitting right on top of the root node, and stayed there until
+    // some unrelated re-render happened to stop the engine again and fire the one remaining trigger.
+    // That late fit is what looked like "hovering zooms the whole chart out".
+    //
+    // So: poll until the graph is actually measurable, fit until the measurement stops changing
+    // (the layout is still expanding during the first frames), then mark this graph framed and stop
+    // touching the camera. One framing per load, at load — never again in response to interaction.
+    useEffect(() => {
+      if (!isBrowser() || type !== 4 || !forceGraphsReady) return undefined;
+      if (hasFramed3dRef.current === frameToken) return undefined;
+
+      let attempts = 0;
+      let previousDistance: number | null = null;
+      const interval = setInterval(() => {
+        attempts++;
+        const distance = fit3dCameraToGraphRef.current(FRAME_FLY_MS_3D);
+
+        if (distance != null && previousDistance != null &&
+            Math.abs(distance - previousDistance) <= previousDistance * FRAME_STABLE_TOLERANCE) {
+          // Two consecutive measurements agree — the layout has stopped growing, so this framing
+          // is the final one.
+          hasFramed3dRef.current = frameToken;
+          clearInterval(interval);
+          return;
+        }
+        previousDistance = distance;
+
+        if (attempts >= FRAME_READY_MAX_ATTEMPTS) {
+          // Give up re-measuring, but keep whatever the last successful fit produced.
+          if (distance != null) hasFramed3dRef.current = frameToken;
+          clearInterval(interval);
+        }
+      }, FRAME_READY_POLL_MS);
+
+      return () => clearInterval(interval);
+    }, [type, forceGraphsReady, frameToken]);
+
     // Single source of truth for framing the graph. Padding is viewport-relative (see
     // getFitPadding) so the breathing room stays visually constant across canvas and graph sizes,
     // instead of the old fixed 220px/350px pad that dominated small canvases and vanished on large.
     const fitGraphToView = useCallback((durationMs: number) => {
       if (!fgRef.current?.zoomToFit) return;
+      // 3D places the camera itself (see fit3dCameraToGraph); zoomToFit stays the fallback for the
+      // frames where the graph bbox isn't measurable yet.
+      if (type === 4 && fit3dCameraToGraphRef.current(durationMs) != null) return;
       const ratio = type === 5 ? FIT_PADDING_RATIO_2D : FIT_PADDING_RATIO_3D;
       fgRef.current.zoomToFit(durationMs, getFitPadding(graphWidth, graphHeight, ratio));
     }, [fgRef, type, graphWidth, graphHeight]);
@@ -1245,8 +1383,15 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         } else {
           fitGraphToView(0);
         }
+      } else if (type === 4 && hasFramed3dRef.current !== frameToken) {
+        // 3D framing is owned by the readiness poll above; this only covers the case where an
+        // engine stop beats the poll to it. Once the graph has been framed, later engine stops —
+        // including ones provoked by an unrelated re-render — must NOT move the camera again.
+        if (fit3dCameraToGraphRef.current(FRAME_FLY_MS_3D) != null) {
+          hasFramed3dRef.current = frameToken;
+        }
       }
-    }, [fitGraphToView, type, filteredGraphData, fgRef, graphWidth, graphHeight]);
+    }, [fitGraphToView, type, filteredGraphData, fgRef, graphWidth, graphHeight, frameToken]);
 
     useEffect(() => {
       frameSettledGraphRef.current = frameSettledGraph;
@@ -1493,7 +1638,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       return (isRootByDepth ? size * 1.6 : size) * nodeSizeValue;
     };
 
-    const createNodeLabel = useCallback((node: any, size: number, isHighlighted: boolean = false) => {
+    const createNodeLabel = useCallback((node: any, size: number) => {
       const group = new THREE.Group();
       // Tagged so a hover change can find and replace just this label without touching the
       // rest of the node's group (see updateNodeHighlight below).
@@ -1536,9 +1681,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       const isLight = theme === 'light';
 
       sprite.color = isLight ? '#0a0a0a' : '#ffffff'; // or '#111111', '#0f0f0f', '#1c1c1c'
-      // Click-selected or hovered nodes get a purple label background; all others keep the
-      // theme-based near-black/white scheme unchanged.
-      sprite.backgroundColor = isHighlighted ? '#a05fdd' : (isLight ? '#ffffff' : 'rgba(0, 0, 0, 0.95)');
+      // One theme-based background for every state. There is deliberately no purple/highlight
+      // variant: that pill read as a competing tooltip next to the hover card.
+      sprite.backgroundColor = isLight ? '#ffffff' : 'rgba(0, 0, 0, 0.95)';
       sprite.strokeColor = isLight ? '#000000' : 'transparent';
       sprite.strokeWidth = isLight ? 0.6 : 0; // 0.4–0.8 usually looks good
 
@@ -1605,8 +1750,11 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       const baseSize = getNodeSizeValue(node);
       const isRootNode = node.depth === 0;
       const isHighlighted = searchNodeId === node.id || hoveredNodeIdRef.current === node.id;
-      if (showLabels && (node.depth <= 1 || isHighlighted)) {
-        const labelGroup = createNodeLabel(node, baseSize, isHighlighted);
+      // Label visibility/colour follow SELECTION only (see nodeThreeObject) — hover must not raise
+      // a purple pill. `isHighlighted` below still carries hover, for the glow.
+      const isLabelSelected = searchNodeId === node.id;
+      if (showLabels && (node.depth <= 1 || isLabelSelected)) {
+        const labelGroup = createNodeLabel(node, baseSize);
         group.add(labelGroup);
       }
 
@@ -1617,7 +1765,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       if (glowSprite) {
         const deemphasized = isNodeDeemphasized(node);
         const outsideSelection = highlightSetRef.current.size > 0 && !highlightSetRef.current.has(nodeId);
-        const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? SELECTION_DIM_OPACITY_3D : 1);
+        const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? BRANCH_DIM_OPACITY_3D : 1);
         const glowDiameterMultiplier = getGlowDiameterMultiplier(isRootNode, isHighlighted);
         glowSprite.scale.set(baseSize * glowDiameterMultiplier, baseSize * glowDiameterMultiplier, 1);
         const material = glowSprite.material as THREE.SpriteMaterial;
@@ -1648,7 +1796,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       // MORE dimmed (lower) opacity so neither silently overrides the other.
       // Read from the ref, not the reactive highlightSet — see highlightSetRef's comment above.
       const outsideSelection = highlightSetRef.current.size > 0 && !highlightSetRef.current.has(node.id);
-      const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? SELECTION_DIM_OPACITY_3D : 1);
+      const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? BRANCH_DIM_OPACITY_3D : 1);
       // Read from the ref, not reactive hoveredNode — see hoveredNodeIdRef's comment. Hover-only
       // changes are applied afterward via updateNodeHighlight instead of rebuilding through here.
       const isHovered = hoveredNodeIdRef.current === node.id;
@@ -1682,9 +1830,12 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       glowSprite.userData.isGlowSprite = true;
       group.add(glowSprite);
 
-      // Node body — a semi-transparent, soft-edged circle (not the library's default opaque sphere;
-      // nodeThreeObjectExtend is false, so this sprite IS the node's clickable/hoverable/draggable
-      // surface, using the sprite's default raycast behavior — do not override it to a no-op here.
+      // Node body. A node whose label names a technology renders that technology's LOGO in place of
+      // the generic ball; everything else (sections, projects, pages, and the root) keeps the
+      // semi-transparent soft-edged circle. Either way this sprite IS the node's
+      // clickable/hoverable/draggable surface — nodeThreeObjectExtend is false and we rely on the
+      // sprite's default raycast, so it must never be overridden to a no-op here.
+      const logoTexture = isRootNode ? null : getNodeLogoTexture(node?.name, theme === 'light');
       const nodeBody = isRootNode ?
         new THREE.Mesh(
           getRootNodeBodySphereGeometry(),
@@ -1696,8 +1847,10 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
           }),
         ) :
         new THREE.Sprite(new THREE.SpriteMaterial({
-          map: getNodeBodyTexture(),
-          color: new THREE.Color(glowR / 255, glowG / 255, glowB / 255),
+          map: logoTexture ?? getNodeBodyTexture(),
+          // A logo carries its own brand colours, so it is left untinted; the plain body sprite is a
+          // white mask that has to be tinted to the node's metric colour.
+          ...(logoTexture ? {} : {color: new THREE.Color(glowR / 255, glowG / 255, glowB / 255)}),
           transparent: true,
           depthWrite: false,
           opacity: nodeOpacity,
@@ -1705,7 +1858,8 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       if (isRootNode) {
         nodeBody.scale.set(baseSize, baseSize, baseSize);
       } else {
-        nodeBody.scale.set(baseSize * NODE_BODY_DIAMETER_MULTIPLIER, baseSize * NODE_BODY_DIAMETER_MULTIPLIER, 1);
+        const diameter = baseSize * (logoTexture ? NODE_LOGO_DIAMETER_MULTIPLIER : NODE_BODY_DIAMETER_MULTIPLIER);
+        nodeBody.scale.set(diameter, diameter, 1);
       }
       nodeBody.renderOrder = 1;
       nodeBody.userData.baseOpacityFactor = 1;
@@ -1753,15 +1907,12 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         group.add(prunableRing2);
       }
 
-      // Purple label background when the node is click-selected OR hovered (independent of the
-      // click-only highlight rings above). Computed before the visibility check because depth 2+
-      // nodes only show a label at all when highlighted.
-      // Read the current hover from the ref, not reactive state — see hoveredNodeIdRef's comment.
-      // Hover-only highlight changes are applied afterward via updateNodeHighlight instead of
-      // rebuilding through this function.
-      const isHighlighted = searchNodeId === node.id || hoveredNodeIdRef.current === node.id;
-      if (showLabels && (node.depth <= 1 || isHighlighted)) {
-        const labelGroup = createNodeLabel(node, baseSize, isHighlighted);
+      // Labels are SELECTION-driven only in 3D: hovering must not raise a label or tint one purple,
+      // because that purple pill read as a second tooltip competing with the hover card. Hover still
+      // drives the node's own glow (below) — just nothing label-shaped.
+      const isLabelSelected = searchNodeId === node.id;
+      if (showLabels && (node.depth <= 1 || isLabelSelected)) {
+        const labelGroup = createNodeLabel(node, baseSize);
         group.add(labelGroup);
       }
 
@@ -1770,7 +1921,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       // highlightSet intentionally excluded — read via highlightSetRef instead (see its comment).
       // hoveredNode intentionally excluded — read via hoveredNodeIdRef instead (see its comment);
       // hover-only changes are applied afterward via updateNodeHighlight instead of rebuilding here.
-    }, [searchNodeId, sizeBy, nodeSizeValue, depthNodesData, isNodeDeemphasized, colorBy, showPrunable, hideOrphans, showLabels, nodePassesMetricFilters, createNodeLabel, calculateNodeColour]);
+      // `theme` matters now that node bodies can be logos (white-ish brands swap to a dark stand-in
+      // in the light theme). It arrived implicitly before, via createNodeLabel's identity.
+    }, [searchNodeId, sizeBy, nodeSizeValue, depthNodesData, isNodeDeemphasized, colorBy, showPrunable, hideOrphans, showLabels, nodePassesMetricFilters, createNodeLabel, calculateNodeColour, theme]);
 
     // Applies branch-highlight dimming to a single already-built node, in place — same rationale
     // as updateNodeHighlight: avoids nodeThreeObject depending on highlightSet, which would force
@@ -1785,7 +1938,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
 
       const deemphasized = isNodeDeemphasized(node);
       const outsideSelection = highlightSetRef.current.size > 0 && !highlightSetRef.current.has(nodeId);
-      const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? SELECTION_DIM_OPACITY_3D : 1);
+      const nodeOpacity = Math.min(deemphasized ? SELECTION_DIM_OPACITY_3D : 1, outsideSelection ? BRANCH_DIM_OPACITY_3D : 1);
 
       group.traverse(obj => {
         const baseFactor = obj.userData?.baseOpacityFactor;
@@ -1869,7 +2022,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         const highlightSourceNode = selectedNodeDetail ?? hoveredNode;
         return highlightSourceNode ? calculateNodeColour(highlightSourceNode) : linkColor;
       }
-      return lightenColor(linkColor, -60);
+      // Only a light darkening: the branch already stands out by taking its source node's colour and
+      // 1.8x width, so the rest just steps back rather than disappearing into the background.
+      return lightenColor(linkColor, -25);
     }, [linkColor, highlightSet, selectedNodeDetail, hoveredNode, calculateNodeColour, nodesById]);
     // Opacity has to be carried by the color's alpha, not the linkOpacity prop, for BOTH renderers:
     //  - 3D (three-forcegraph) caches link materials by color string and never re-applies a changed
@@ -1909,7 +2064,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       } else {
         controls.target = new THREE.Vector3(GRAPH_ROTATION_CENTER.x, GRAPH_ROTATION_CENTER.y, GRAPH_ROTATION_CENTER.z);
       }
-      // Auto-rotate disabled — the 3D graph stays still; users can drag to orbit.
+      // Auto-rotate disabled — the 3D graph stays still; users drag to orbit it themselves.
       controls.autoRotate = false;
     }, []);
 
@@ -1936,19 +2091,44 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       }, ROTATE_RESUME_DELAY_MS);
     }, [recenterAndResumeRotation]);
 
-    // selectNode/select2dNode never move the camera, so the single-node ">1" guard that exists to
-    // skip the camera-fly animation (handleClick/handle2dClick, below) doesn't apply here — a
-    // lone-node graph must still be selectable/clickable to open its detail popup.
+    // 3D click: select + highlight, then fly the camera OUTWARD along the node's own direction from
+    // the graph centre and look at it, so the clicked node ends up centred, near, and in front of
+    // everything else — the rest of the graph swings behind it. Auto-rotate is paused first (and
+    // stays paused while something is selected) so the orbit can't fight the fly.
     const handleNodeClick = useCallback((node: any) => {
       pauseAutoRotate();
       selectNode(node);
-    }, [pauseAutoRotate, selectNode]);
+      if (!node || !fgRef.current?.cameraPosition) return;
+
+      // cameraPosition's lookAt makes the NODE the orbit target, so the parking distance has to
+      // respect the same min/maxDistance the OrbitControls clamp enforces — otherwise the controls
+      // shove the camera back out on the first update() after the fly and it reads as a bounce.
+      const focusDistance = clampCameraDistance3d(
+        FOCUS_DISTANCE_BY_DEPTH_3D[node.depth as number] ?? FOCUS_DISTANCE_BY_DEPTH_3D[2],
+        linkLengthValue,
+      );
+      const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
+      // The root sits AT the centre, where "outward along its own direction" is undefined — pull
+      // straight back on +z instead of dividing by ~0 and landing the camera inside the graph.
+      const cameraPos = nodeDistance < 1 ?
+        {x: 0, y: 0, z: focusDistance} :
+        (() => {
+          const distRatio = 1 + Math.max(focusDistance, nodeDistance * 0.5) / nodeDistance;
+          return {x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio};
+        })();
+
+      try {
+        fgRef.current.cameraPosition(cameraPos, node, FOCUS_FLY_MS_3D);
+      } catch (error) {
+        reportError(error, {section: 'graph-focus-node'});
+      }
+    }, [pauseAutoRotate, selectNode, fgRef, linkLengthValue]);
     const handle2dNodeClick = useCallback((node: any) => {
       select2dNode(node);
     }, [select2dNode]);
     // 3D-only: the reference design pauses auto-rotate on ANY click, including a miss (no node
     // hit) — react-force-graph-3d has no generic "any click" event, so a background-click miss is
-    // wired separately from handleNodeClick. Clears any open detail popup, matching a background
+    // wired separately from handleNodeClick. Clears the current selection, matching a background
     // click deselecting, then schedules the delayed resume since nothing is selected afterward.
     const handleBackgroundClick = useCallback(() => {
       pauseAutoRotate();
@@ -2027,15 +2207,27 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         rotationControlsRef.current = controls;
         recenterAndResumeRotation();
 
+        // Keeps OrbitControls ticking (damping, drag inertia, the camera tweens' final clamp).
+        // The try/catch is deliberate: OrbitControls' own synthetic-pointer bookkeeping can throw
+        // (see the _pointerPositions patch below), and an uncaught throw here would tear down the
+        // animation loop for good, leaving the graph unresponsive.
         const animate = () => {
-          controls?.update();
+          try {
+            controls?.update();
+          } catch {
+            // swallowed on purpose — never let one bad frame kill the loop
+          }
           animationFrame = requestAnimationFrame(animate);
         };
         animate();
       };
 
       let attempts = 0;
-      const maxAttempts = 30;
+      // Generous window: ForceGraph3D is imported lazily and mounts only once the data has loaded,
+      // so a short poll can expire before its controls exist — the same late-mount trap that used to
+      // leave the camera unframed. Missing the controls here would leave the graph frozen with no
+      // way back, since every pause/resume helper works through rotationControlsRef.
+      const maxAttempts = 200;
       pollInterval = setInterval(() => {
         attempts++;
         controls = fgRef?.current?.controls?.();
@@ -2092,9 +2284,6 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
     // the camera's auto-rotate is paused (e.g. when a node is selected) — it must never freeze.
     // Scoped to `type === 4` so switching to/from the 2D view detaches/reattaches it without leaking.
     useEffect(() => {
-      // Starfield background removed — the 3D view uses a plain black background.
-      if (true) return undefined;
-      // eslint-disable-next-line no-unreachable
       if (!isBrowser() || type !== 4) return undefined;
 
       // Independent rotation loop, started once the starfield exists and cancelled in cleanup. Tied
@@ -2281,7 +2470,13 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       if (!controls) return;
       const {min, max} = getCameraDistanceLimits3d(linkLengthValue);
       controls.minDistance = min;
-      controls.maxDistance = max;
+      // This effect re-runs whenever the link length changes — including the automatic one derived
+      // from the loaded data, which lands right around the opening fit. Hard-setting maxDistance
+      // there would drop the ceiling under the fit and OrbitControls would yank the camera back in
+      // on its next update(). Never clamp below either where the camera IS or where the in-flight
+      // fit is sending it (the latter matters most: mid-flight the camera hasn't arrived yet).
+      const cameraDistance = (fgRef.current?.camera?.() as {position?: THREE.Vector3} | null)?.position?.length?.() ?? 0;
+      controls.maxDistance = Math.max(max, cameraDistance * 1.05, fitDistance3dRef.current * 1.05);
       // Reinforce OrbitControls' own touch defaults (one-finger rotate, two-finger dolly+pan) —
       // explicit rather than relying on the library default, since the native-pinch guard right
       // below only pays off if OrbitControls itself is actually configured to treat two touches
@@ -2621,7 +2816,7 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       // Combine the two independent dimming reasons (filter/search de-emphasis + being outside the
       // selected node's highlighted branch) by taking the MORE dimmed (lower) opacity.
       const outsideSelection = highlightSet.size > 0 && !highlightSet.has(node.id);
-      const dimAlpha = Math.min(deemphasized ? SELECTION_DIM_OPACITY_2D : 1, outsideSelection ? SELECTION_DIM_OPACITY_2D : 1);
+      const dimAlpha = Math.min(deemphasized ? SELECTION_DIM_OPACITY_2D : 1, outsideSelection ? BRANCH_DIM_OPACITY_2D : 1);
       const isDimmed = dimAlpha < 1;
       const isPrunable = node?.isPrunable === true;
       const isOrphan = node?.isOrphan === true;
@@ -2679,10 +2874,11 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
       ctx.fillStyle = `rgba(${Math.min(255, glowR + 60)}, ${Math.min(255, glowG + 60)}, ${Math.min(255, glowB + 60)}, 0.55)`;
       ctx.fill();
 
-      // Purple label background when the node is click-selected OR hovered. Computed before the
-      // visibility check because depth 2+ nodes only show a label at all when highlighted.
-      const isHighlighted = searchNodeId === node.id || hoveredNode?.id === node.id;
-      if (showLabels && (node.depth <= 1 || isHighlighted)) {
+      // Labels follow SELECTION only (mirroring the 3D view): hovering must not raise an extra
+      // label, since the hover card already covers it. Computed before the visibility check because
+      // depth 2+ nodes only show a label at all when selected.
+      const isLabelSelected = searchNodeId === node.id;
+      if (showLabels && (node.depth <= 1 || isLabelSelected)) {
         const url = node.url ?? '';
         const urlMatch = url.match(/^https?:\/\/(?:www\.)?([^/]+)(?:\/(.*))?$/);
         const pathString = urlMatch?.[2] ?? '';
@@ -2710,10 +2906,9 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
         const verticalGap = 3 / globalScale;
 
         const isLightTheme = theme === 'light';
-        // Purple label background when the node is click-selected OR hovered; otherwise keep the
-        // theme-based near-black/white scheme unchanged. isHighlighted computed above the visibility
-        // check.
-        const bgColor = isHighlighted ? '#a05fdd' : (isLightTheme ? '#ffffff' : 'rgba(0, 0, 0, 0.94)');
+        // One theme-based background for every state — no purple/highlight variant (see the 3D
+        // sprite label for why).
+        const bgColor = isLightTheme ? '#ffffff' : 'rgba(0, 0, 0, 0.94)';
         const textColor = isLightTheme ? '#000000' : '#ffffff';
 
         ctx.font = `${effectiveFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
@@ -2839,90 +3034,6 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
               <button className={zoomBtnBottomClass} onClick={zoomFitHandler} title='Zoom to fit'><FontAwesomeIcon icon={faArrowsToDot} fontSize={14} /></button>
             </div>
 
-            <div
-              className={getDetailDrawerWrapClass(!!selectedNodeDetail)}
-              // Same descendant-of-#3d-graph gap as the settings panel / zoom controls above.
-              onMouseEnter={() => handleNodeHover(null)}
-            >
-              {selectedNodeDetail && (() => {
-                const summary = getNodeColorBySummary(selectedNodeDetail, colorBy);
-                const ringCenter = summary.displayValue ?? summary.ringPercent;
-                const title = selectedNodeDetail.name || selectedNodeDetail.h1Header || selectedNodeDetail.url || 'Untitled page';
-                return (
-                  <div className={getDetailDrawerPanelClass(isDark)}>
-                    <div className={classNames('flex items-start gap-2.5 py-4 px-[18px] border-b', isDark ? 'border-[#24262F]' : 'border-[#E6E6EA]')}>
-                      <div className={classNames('text-[17px] font-semibold break-words flex-1', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>{title}</div>
-                      <button
-                        type='button'
-                        className={classNames('ml-auto shrink-0 bg-transparent border-0 cursor-pointer text-base', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}
-                        onClick={clearSelectedNodeDetail}
-                        aria-label='Close node details'
-                      >
-                        <FontAwesomeIcon icon={faXmark} />
-                      </button>
-                    </div>
-                    <div className='p-[18px] overflow-y-auto flex-1'>
-                      <div className={classNames('font-mono text-[11.5px] break-all rounded-[7px] border border-solid py-[7px] px-[9px] mb-[18px]', isDark ? 'bg-[#1A1B24] border-[#24262F] text-[#A7A9B4]' : 'bg-[#F7F7FB] border-[#E6E6EA] text-[#4E5156]')}>
-                        {selectedNodeDetail.url}
-                      </div>
-                      <div className='flex items-center gap-3.5 mb-[18px]'>
-                        {summary.ringPercent !== null ? (
-                          <div
-                            className='w-[62px] h-[62px] rounded-full shrink-0 flex items-center justify-center relative'
-                            style={{background: `conic-gradient(${summary.color} ${summary.ringPercent * 3.6}deg, ${isDark ? '#1A1B24' : '#F7F7FB'} 0)`}}
-                          >
-                            <span className={classNames('font-bold', summary.displayValue !== null ? 'text-xs' : 'text-lg', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>{ringCenter}</span>
-                          </div>
-                        ) : (
-                          <span className='w-[11px] h-[11px] rounded-full shrink-0' style={{backgroundColor: summary.color, boxShadow: `0 0 8px ${summary.color}`}} />
-                        )}
-                        <div>
-                          <div className={classNames('text-[11px] font-semibold uppercase tracking-wider', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>{summary.title}</div>
-                          <div className='text-[15px] font-bold' style={{color: summary.color}}>{summary.bandLabel}</div>
-                        </div>
-                      </div>
-                      <div className='grid grid-cols-2 gap-2.5'>
-                        <div className={getDetailStatTileClass(isDark)}>
-                          <div className={classNames('text-xl font-bold', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>{selectedNodeDetail.depth ?? '-'}</div>
-                          <div className={classNames('text-[11.5px]', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>Level</div>
-                        </div>
-                        <div className={getDetailStatTileClass(isDark)}>
-                          <div className={classNames('text-xl font-bold', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>{selectedNodeDetail.wordCount ?? '-'}</div>
-                          <div className={classNames('text-[11.5px]', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>Detail</div>
-                        </div>
-                        <div className={getDetailStatTileClass(isDark)}>
-                          <div className='text-xl font-bold text-[#27AE60]'>{selectedNodeDetail.traffic ?? '-'}</div>
-                          <div className={classNames('text-[11.5px]', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>Usage</div>
-                        </div>
-                        <div className={getDetailStatTileClass(isDark)}>
-                          <div className='text-xl font-bold text-[#88c2ff]'>{selectedNodeDetail.keywords ?? '-'}</div>
-                          <div className={classNames('text-[11.5px]', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>Related</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={classNames('flex gap-2.5 py-3.5 px-[18px] border-t', isDark ? 'border-[#24262F]' : 'border-[#E6E6EA]')}>
-                      <button
-                        type='button'
-                        className='flex-1 h-[38px] rounded-[9px] border-0 bg-brand-primary text-white text-[13px] font-semibold cursor-pointer'
-                        onClick={focusSelectedNodeDetail}
-                      >
-                        Focus node
-                      </button>
-                      {selectedNodeDetail.url && (
-                        <a
-                          href={sanitizeUrl(selectedNodeDetail.url)}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className={classNames('flex-1 h-[38px] rounded-[9px] border border-solid text-[13px] font-semibold flex items-center justify-center', isDark ? 'bg-[#1A1B24] border-[#24262F] text-[#F3F3F7]' : 'bg-[#F7F7FB] border-[#E6E6EA] text-[#141414]')}
-                        >
-                          Open page
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
 
             {isBrowser() && filteredGraphData.nodes?.length && (type === 4 || type === 5) && (!forceGraphsReady || !ForceGraph2D || !ForceGraph3D) && (
               <div className='absolute inset-0 flex items-center justify-center'>
@@ -3013,35 +3124,38 @@ export const Graph = observer(({type, theme, showWatermark, watermarkLogoUrl, se
               />
             )}
 
-            {/* Hover info-card. DOM overlay independent of canvas/WebGL, so it renders identically
-                for both the 3D (type 4) and 2D (type 5) views whenever a node is hovered. Never
-                intercepts pointer events meant for the graph underneath (pointer-events-none). */}
-            {hoveredNode && hoverCardPos && (() => {
-              const summary = getNodeColorBySummary(hoveredNode, 'pageHealth');
-              const slug = getNodeUrlSlug(hoveredNode);
-              const dotSeparatorClass = isDark ? 'text-[#4A4C57]' : 'text-[#C9C9CF]';
-              return (
-                <div
-                  className={classNames(
-                    'fixed z-[70] pointer-events-none rounded-[9px] border border-solid px-3 py-2 shadow-lg',
-                    isDark ? 'bg-[#141520] border-[#24262F]' : 'bg-white border-[#E6E6EA]',
-                  )}
-                  style={{left: hoverCardPos.x, top: hoverCardPos.y}}
-                >
-                  <div className={classNames('text-[12.5px] font-semibold mb-1 break-all max-w-[200px]', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>
-                    {slug}
-                  </div>
-                  <div className={classNames('flex items-center gap-1.5 text-[11px] whitespace-nowrap', isDark ? 'text-[#A7A9B4]' : 'text-[#4E5156]')}>
-                    <span className='w-[8px] h-[8px] rounded-full shrink-0' style={{backgroundColor: summary.color}} />
-                    <span>Health {summary.ringPercent}</span>
-                    <span className={dotSeparatorClass}>·</span>
-                    <span>Depth {hoveredNode.depth ?? '-'}</span>
-                    <span className={dotSeparatorClass}>·</span>
-                    <span>{hoveredInboundCount} in</span>
-                  </div>
+            {/* Hover card. DOM overlay independent of canvas/WebGL, so it renders identically for
+                both the 3D (type 4) and 2D (type 5) views whenever a node is hovered. Shows the
+                same thing the tree diagram's tooltip does — the node's name, then its DIRECT
+                children, one level down only. Never intercepts pointer events meant for the graph
+                underneath (pointer-events-none). */}
+            {hoveredNode && hoverCardPos && (
+              <div
+                className={classNames(
+                  'fixed z-[70] pointer-events-none rounded-[9px] border border-solid px-3 py-2 shadow-lg max-w-60',
+                  isDark ? 'bg-[#141520] border-[#24262F]' : 'bg-white border-[#E6E6EA]',
+                )}
+                style={{left: hoverCardPos.x, top: hoverCardPos.y}}
+              >
+                <div className={classNames('text-[12.5px] font-semibold break-words', isDark ? 'text-[#F3F3F7]' : 'text-[#141414]')}>
+                  {hoveredNode.name || getNodeUrlSlug(hoveredNode)}
                 </div>
-              );
-            })()}
+                {hoveredChildren.shown.length > 0 ? (
+                  <ul className={classNames('mt-1.5 list-disc pl-4 text-[11.5px] leading-[1.55]', isDark ? 'text-[#A7A9B4]' : 'text-[#4E5156]')}>
+                    {hoveredChildren.shown.map((childName, index) => (
+                      <li key={`${childName}-${index}`} className='truncate'>{childName}</li>
+                    ))}
+                    {hoveredChildren.hidden > 0 && (
+                      <li className='list-none -ml-4 opacity-80'>{`+${hoveredChildren.hidden} more`}</li>
+                    )}
+                  </ul>
+                ) : (
+                  <div className={classNames('mt-1.5 text-[11.5px]', isDark ? 'text-[#6B6D7A]' : 'text-[#9E9DA1]')}>
+                    No child pages
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (!dataLoader && !depthNodesData.nodes?.length) && (

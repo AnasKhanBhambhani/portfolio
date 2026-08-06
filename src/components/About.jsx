@@ -12,7 +12,7 @@ const PARA = "text-muted text-base leading-[1.7]";
 
 export default function About() {
   return (
-    <section id="about" className={SECTION}>
+    <section id="about" data-aos="zoom-in" className={SECTION}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-15 mb-10">
         <div>
           <Reveal className={TAG_HEAD}>About Me</Reveal>

@@ -64,14 +64,22 @@ const SECTIONS: {slug: string; title: string; items: Item[]}[] = [
         {slug: 'pricing-subscriptions', title: 'Pricing & Subscriptions', strength: 0.9},
         {slug: 'component-architecture', title: 'Reusable Component Architecture', strength: 0.85},
       ]},
-      {slug: 'learning-platform', title: 'AI-Assisted Learning Platform', strength: 0.8},
       {slug: 'office-management', title: 'Office Management System', strength: 0.85, children: [
         {slug: 'attendance', title: 'Attendance & Roles', strength: 0.75},
       ]},
-      {slug: 'content-publishing', title: 'Content Publishing Platform', strength: 0.7},
-      {slug: 'payments-checkout', title: 'Payments & Checkout', strength: 0.8},
-      {slug: 'browser-extension', title: 'Workflow Chrome Extension (MV3)', strength: 0.72},
-      {slug: 'full-stack-practice', title: 'Full-Stack Practice Projects', strength: 0.78},
+      {slug: 'hottocare', title: 'HottoCare', strength: 0.8, children: [
+        {slug: 'patient-records', title: 'Patient Records & CRUD', strength: 0.78},
+        {slug: 'realtime-messaging', title: 'Real-Time Messaging', strength: 0.75},
+      ]},
+      {slug: 'dragonfly', title: 'DragonFly', strength: 0.75, children: [
+        {slug: 'ssr-pages', title: 'SSR Pages & Caching', strength: 0.72},
+      ]},
+      // Self-directed work — a product management system, and the only place
+      // several stack items (Supabase, Remix, Zod) are actually used.
+      {slug: 'full-stack-practice', title: 'Full-Stack Practice Projects', strength: 0.78, children: [
+        {slug: 'product-management', title: 'Product Management', strength: 0.76},
+        {slug: 'customer-management', title: 'Customer Management', strength: 0.74},
+      ]},
     ],
   },
   {
@@ -82,9 +90,11 @@ const SECTIONS: {slug: string; title: string; items: Item[]}[] = [
         {slug: 'react', title: 'React', strength: 0.97},
         {slug: 'typescript', title: 'TypeScript', strength: 0.92},
         {slug: 'nextjs', title: 'Next.js', strength: 0.9},
+        {slug: 'remix', title: 'Remix', strength: 0.75},
         {slug: 'redux', title: 'Redux', strength: 0.82},
         {slug: 'mobx', title: 'MobX', strength: 0.8},
         {slug: 'react-query', title: 'React Query', strength: 0.83},
+        {slug: 'zod', title: 'Zod', strength: 0.72},
       ]},
       {slug: 'styling-ui', title: 'Styling & UI', strength: 0.9, children: [
         {slug: 'tailwind', title: 'Tailwind', strength: 0.93},
@@ -103,11 +113,6 @@ const SECTIONS: {slug: string; title: string; items: Item[]}[] = [
         {slug: 'postgresql', title: 'PostgreSQL', strength: 0.7},
         {slug: 'firebase', title: 'Firebase', strength: 0.8},
         {slug: 'supabase', title: 'Supabase', strength: 0.65},
-      ]},
-      {slug: 'integrations', title: 'Integrations', strength: 0.75, children: [
-        {slug: 'stripe', title: 'Stripe', strength: 0.8},
-        {slug: 'paypal', title: 'PayPal', strength: 0.72},
-        {slug: 'chrome-mv3', title: 'Chrome Extensions (MV3)', strength: 0.7},
       ]},
       {slug: 'delivery', title: 'Delivery & Process', strength: 0.85, children: [
         {slug: 'git', title: 'Git & GitHub', strength: 0.92},
@@ -128,10 +133,9 @@ const SECTIONS: {slug: string; title: string; items: Item[]}[] = [
     slug: 'education',
     title: 'Education',
     items: [
-      {slug: 'cs-foundations', title: 'Computer Science Foundations', strength: 0.8},
+      {slug: 'computer-science', title: 'Graduate in Computer Science', strength: 0.85},
       {slug: 'frontend-track', title: 'Frontend Engineering (self-taught)', strength: 0.9},
       {slug: 'backend-track', title: 'Backend & Databases (self-study)', strength: 0.72},
-      {slug: 'ongoing', title: 'Ongoing Learning', strength: 0.85},
     ],
   },
   {
@@ -230,13 +234,23 @@ export function buildMockCrawl(): MockCrawl {
   link(`${HOST}/projects/ai-seo-platform`, `${HOST}/stack/frontend/nextjs`);
   link(`${HOST}/projects/ai-seo-platform`, `${HOST}/stack/frontend/mobx`);
   link(`${HOST}/projects/office-management`, `${HOST}/stack/data/firebase`);
-  link(`${HOST}/projects/payments-checkout`, `${HOST}/stack/integrations/stripe`);
-  link(`${HOST}/projects/payments-checkout`, `${HOST}/stack/integrations/paypal`);
-  link(`${HOST}/projects/browser-extension`, `${HOST}/stack/integrations/chrome-mv3`);
-  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/backend/node`);
+  link(`${HOST}/projects/office-management`, `${HOST}/stack/frontend/redux`);
+  link(`${HOST}/projects/office-management`, `${HOST}/stack/styling-ui/ant-design`);
+  link(`${HOST}/projects/hottocare`, `${HOST}/stack/styling-ui/tailwind`);
+  link(`${HOST}/projects/dragonfly`, `${HOST}/stack/styling-ui/tailwind`);
+  link(`${HOST}/projects/dragonfly`, `${HOST}/stack/frontend/remix`);
+  link(`${HOST}/projects/dragonfly`, `${HOST}/stack/frontend/zod`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/frontend/remix`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/frontend/zod`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/data/supabase`);
   link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/data/postgresql`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/data/mongodb`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/backend/node`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/backend/express`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/backend/nestjs`);
+  link(`${HOST}/projects/full-stack-practice`, `${HOST}/stack/styling-ui/tailwind`);
   link(`${HOST}/experience/enigmatix`, `${HOST}/projects/ai-seo-platform`);
-  link(`${HOST}/experience/enigmatix`, `${HOST}/projects/payments-checkout`);
+  link(`${HOST}/experience/enigmatix`, `${HOST}/projects/office-management`);
   link(`${HOST}/education/frontend-track`, `${HOST}/stack/frontend`);
   link(`${HOST}/education/backend-track`, `${HOST}/stack/backend`);
 

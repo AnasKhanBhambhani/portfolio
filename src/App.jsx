@@ -1,8 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import Loader from "./components/Loader";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
-import { IconSun, IconMoon } from "./components/icons";
+import { IconSun, IconMoon, IconArrowLeft } from "./components/icons";
 import { FlipNavProvider } from "./context/FlipNavContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import useSectionRouter from "./hooks/useSectionRouter";
@@ -38,21 +40,25 @@ function SiteLensThemeToggle() {
 
 // Site Lens's own header renders its 3D/2D/Tree tabs starting flush at the
 // top-left, so this bar sits as a normal (non-fixed) row ABOVE it rather than
-// floating over it. Styled to match those tabs (same text-sm/font-semibold/
-// px-[15px] treatment) so "Portfolio" reads as one more tab, not a separate
-// floating pill. Its height (h-15 = 60px) matches the `--chrome-height`
+// floating over it. Its height (h-15 = 60px) matches the `--chrome-height`
 // fallback Site Lens's own layout already reserves space for (see
 // site-lens/index.tsx's `100vh - var(--chrome-height, 60px)`), so it doesn't
 // need to be set explicitly — the two heights just have to line up.
+//
+// "Back to portfolio" is the only way out of this page, so it's a real button —
+// surface fill, border and a drawn arrow icon — rather than a bare text link
+// that reads as one more tab beside Site Lens's own.
 function SiteLensTopBar({ onBack }) {
   return (
     <div className="h-15 flex items-center gap-1 border-b border-edge/10 bg-bg px-6.5">
       <button
         type="button"
         onClick={onBack}
-        className="-mb-px flex items-center gap-1.5 border-b-2 border-transparent px-3.75 py-2.75 text-sm font-semibold text-muted-2 transition-colors hover:text-fg"
+        aria-label="Back to portfolio"
+        className="group inline-flex items-center gap-2 rounded-full border border-edge/15 bg-surface/10 px-4 py-2 text-sm font-semibold text-fg transition-colors hover:border-edge/30 hover:bg-surface/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <span aria-hidden>←</span> Portfolio
+        <IconArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
+        Portfolio
       </button>
       <div className="ml-auto">
         <SiteLensThemeToggle />
@@ -67,6 +73,22 @@ function App() {
   const [path, setPath] = useState(() =>
     typeof window !== "undefined" ? normalizePath(window.location.pathname) : "/",
   );
+
+  // Scroll-entrance engine for every <Reveal> on the page. Initialised once, here,
+  // rather than per-component: AOS is a singleton that scans the document itself.
+  // Its own MutationObserver picks up the lazily-mounted sections, so no manual
+  // refresh is needed when MainContent's chunk lands.
+  useEffect(() => {
+    AOS.init({
+      once: true, // reveal on the way down only — no re-animating on the way back up
+      duration: 700,
+      easing: "ease-out-cubic",
+      offset: 80, // fire a little before the element's top reaches the viewport edge
+      // Honour the OS "reduce motion" setting: AOS then leaves everything in its
+      // final, visible state instead of animating.
+      disable: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    });
+  }, []);
 
   useEffect(() => {
     function onPopState() {

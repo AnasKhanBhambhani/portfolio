@@ -1,108 +1,90 @@
-import { useEffect, useState } from "react";
 import { NAV_ITEMS, NAV_IDS } from "../data/content";
 import useActiveSection from "../hooks/useActiveSection";
-import useMagnetic from "../hooks/useMagnetic";
 import { useTheme } from "../context/ThemeContext";
-import { IconMenu, IconClose, IconSun, IconMoon } from "./icons";
+import {
+  IconHome, IconUsers, IconCode, IconLayers, IconClock, IconInfo, IconMail, IconSun, IconMoon,
+} from "./icons";
 import { EASE } from "../ui";
 
-const LINKS = NAV_ITEMS.filter((item) => item.href !== "#contact");
+// Home isn't in NAV_ITEMS (the old top bar used the wordmark for it), but a bottom
+// tab bar reads wrong without it — so it's prepended here rather than pushed into
+// content.js, which stays free of component concerns.
+const HOME_ITEM = { href: "#hero", label: "Home" };
+const ITEMS = [HOME_ITEM, ...NAV_ITEMS];
+
+// Icons live here, keyed by href, for the same reason: content.js holds copy, not JSX.
+const ICONS = {
+  "#hero": IconHome,
+  "#about": IconUsers,
+  "#capabilities": IconCode,
+  "#stack": IconLayers,
+  "#timeline": IconClock,
+  "#fieldnotes": IconInfo,
+  "#contact": IconMail,
+};
+
+const SECTION_IDS = [HOME_ITEM.href.slice(1), ...NAV_IDS];
 
 export default function Nav() {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-  const active = useActiveSection(NAV_IDS);
-  const ctaRef = useMagnetic(14);
+  const active = useActiveSection(SECTION_IDS);
   const { theme, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    function handleScroll() {
-      setScrolled(window.scrollY > 24);
-    }
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <>
-      <div
-        className={`fixed top-0 inset-x-0 z-49 h-18 border-b transition-colors duration-300 ${
-          scrolled ? "bg-bg/72 backdrop-blur-2xl border-edge/10" : "bg-transparent border-transparent"
-        }`}
-      />
-      <nav className="fixed top-0 inset-x-0 z-50 h-18 max-w-295 mx-auto flex items-center justify-between px-5 sm:px-7 lg:px-8">
-        <a href="#hero" className="font-display font-bold text-[19px] tracking-[-0.02em] flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-[3px] grad-btn shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_50%,transparent)]" />
-          Muhammad<span className="text-muted-2 font-normal">.anas</span>
-        </a>
-
-        <div className="hidden lg:flex items-center gap-7.5">
-          {LINKS.map((item) => (
+    // Thumb-reach at the bottom on phones/tablets; conventional top chrome from lg up,
+    // where the cursor lives at the top of the window and there's room for it.
+    <nav
+      aria-label="Sections"
+      className="fixed left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)]
+        bottom-4 sm:bottom-6 lg:bottom-auto lg:top-5"
+    >
+      {/* `glass` is the site's own frosted surface (see index.css): a barely-there tint over a
+          32px blur, tinted light on the dark theme and smoke-dark on the light one — so the bar
+          reads as blurred glass rather than the near-solid panel a plain bg fill produced. It
+          brings its own border ring and shadow, so none are set here. */}
+      <div className="glass flex items-center gap-0.5 sm:gap-1 rounded-full p-1.5">
+        {ITEMS.map((item) => {
+          const Icon = ICONS[item.href];
+          const isActive = active === item.href.slice(1);
+          return (
             <a
               key={item.href}
               href={item.href}
-              className={`text-sm font-medium transition-colors duration-250 hover:text-fg ${
-                active === item.href.slice(1) ? "text-fg" : "text-muted"
-              }`}
+              aria-label={item.label}
+              aria-current={isActive ? "true" : undefined}
+              title={item.label}
+              className={`group relative grid place-items-center rounded-full transition-all duration-300 ${EASE}
+                ${isActive
+                  ? "bg-surface/12 text-fg h-11 gap-2 pl-1.5 pr-1.5 sm:pr-4 grid-flow-col"
+                  : "h-11 w-11 text-muted-2 hover:text-fg hover:bg-surface/8"}`}
             >
-              {item.label}
+              <span
+                className={`grid place-items-center rounded-full transition-colors duration-300
+                  ${isActive ? "h-8 w-8 bg-surface/14" : ""}`}
+              >
+                <Icon className="w-4.5 h-4.5" />
+              </span>
+              {/* The label only rides along on the active tab, exactly like the reference —
+                  every other tab stays a bare icon so the bar keeps its compact pill shape. */}
+              {isActive && (
+                <span className="hidden sm:block pr-1 text-sm font-semibold whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
             </a>
-          ))}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="w-9 h-9 grid place-items-center rounded-xl border border-edge/10 bg-surface/4 text-muted hover:text-fg hover:border-accent transition-colors duration-250 [&_svg]:w-4.5 [&_svg]:h-4.5"
-          >
-            {theme === "dark" ? <IconSun /> : <IconMoon />}
-          </button>
-          <a
-            ref={ctaRef}
-            href="#contact"
-            data-magnetic=""
-            className="py-2.25 px-5 rounded-xl grad-btn text-white font-semibold text-sm"
-          >
-            Get in touch
-          </a>
-        </div>
+          );
+        })}
 
-        <div className="lg:hidden flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="w-10 h-10 grid place-items-center rounded-xl text-muted hover:text-fg [&_svg]:w-5 [&_svg]:h-5"
-          >
-            {theme === "dark" ? <IconSun /> : <IconMoon />}
-          </button>
-          <button
-            className="w-10 h-10 grid place-items-center text-fg"
-            aria-label="Menu"
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-          >
-            {open ? <IconClose className="w-6 h-6" /> : <IconMenu className="w-6 h-6" />}
-          </button>
-        </div>
-      </nav>
+        <span aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-edge/12" />
 
-      <div
-        className={`lg:hidden fixed inset-x-0 top-18 z-40 bg-bg/96 backdrop-blur-xl border-b border-edge/10
-          flex flex-col gap-5.5 p-6 transition-transform duration-400 ${EASE}
-          ${open ? "translate-y-0" : "translate-y-[-120%]"}`}
-      >
-        {NAV_ITEMS.map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            onClick={() => setOpen(false)}
-            className={`text-base font-medium ${active === item.href.slice(1) ? "text-accent" : "text-muted"}`}
-          >
-            {item.label}
-          </a>
-        ))}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          className="grid h-11 w-11 place-items-center rounded-full text-muted-2 transition-colors duration-300 hover:bg-surface/8 hover:text-fg"
+        >
+          {theme === "dark" ? <IconSun className="w-4.5 h-4.5" /> : <IconMoon className="w-4.5 h-4.5" />}
+        </button>
       </div>
-    </>
+    </nav>
   );
 }

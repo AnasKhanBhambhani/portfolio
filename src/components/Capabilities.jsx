@@ -8,7 +8,7 @@ const ICONS = [IconCode, IconServer, IconLayers, IconUsers];
 
 export default function Capabilities() {
   return (
-    <section id="capabilities" className={SECTION}>
+    <section id="capabilities" data-aos="zoom-in" className={SECTION}>
       <Reveal className={TAG_HEAD}>Capabilities</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         What I bring to a team

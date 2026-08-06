@@ -44,7 +44,7 @@ export default function Timeline() {
   const trackRef = useTimelineProgress();
 
   return (
-    <section id="timeline" className={SECTION}>
+    <section id="timeline" data-aos="zoom-in" className={SECTION}>
       <Reveal className={TAG_HEAD}>Career</Reveal>
       <Reveal as="h2" delay={1} className={`${SEC_TITLE} mb-3`}>
         Experience

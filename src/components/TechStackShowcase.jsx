@@ -60,7 +60,7 @@ export default function TechStackShowcase() {
       <div className="relative flex flex-col items-center gap-2 px-3 sm:gap-3 sm:px-5">
         {TECH_ICON_ROWS.map((row, i) => (
           <div key={i} className="flex flex-nowrap justify-center gap-1 sm:gap-2 md:gap-2.5 lg:gap-3">
-            {row.map(({ name, Icon, color, url }) => (
+            {row.map(({ name, Icon, color, url }, tileIndex) => (
               <a
                 key={name}
                 href={url}
@@ -68,6 +68,11 @@ export default function TechStackShowcase() {
                 rel="noopener noreferrer"
                 title={name}
                 aria-label={name}
+                data-aos="flip-left"
+                // Each tile in a row flips a beat after the one before it, so the row
+                // reads as a sequence rather than every tile turning at once. AOS only
+                // ships delay CSS in 50ms steps, hence the multiple of 50.
+                data-aos-delay={(tileIndex % 8) * 50}
                 style={{ "--tile-color": color }}
                 className="tech-tile group flex w-8 sm:w-12 md:w-16 lg:w-20 xl:w-24 shrink-0 flex-col items-center justify-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 rounded-lg lg:rounded-xl border border-edge/10 bg-surface/5 px-1 py-2 sm:px-1.5 sm:py-2.5 md:px-2 md:py-3.5 lg:py-4.5 text-center backdrop-blur-sm transition-colors duration-300 hover:border-edge/25 hover:bg-surface/10 focus-visible:border-edge/25 focus-visible:bg-surface/10 focus-visible:outline-none"
               >

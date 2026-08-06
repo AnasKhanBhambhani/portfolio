@@ -54,7 +54,7 @@ export const CAPABILITIES = [
 ];
 
 export const STACK_GROUPS = [
-  { label: "frontend", items: ["JavaScript", "TypeScript", "React", "Next.js", "Redux", "MobX", "React Query"] },
+  { label: "frontend", items: ["JavaScript", "TypeScript", "React", "Next.js", "Remix", "Redux", "MobX", "React Query", "Zod"] },
   { label: "styling & ui", items: ["Tailwind", "Ant Design", "SCSS", "Bootstrap"] },
   { label: "backend · studied & practice", items: ["Node.js", "Express", "NestJS", "REST APIs", "GraphQL"] },
   { label: "data · practice", items: ["MongoDB", "PostgreSQL", "Firebase", "Supabase"] },
@@ -148,5 +148,21 @@ export const FIELD_NOTES = [
       "Applied Zod for schema validation to ensure reliable and secure data handling.",
     ],
     tech: ["Remix", "FastAPI", "Zod", "Tailwind"],
+  },
+  {
+    domain: "Self-directed · Full-Stack",
+    title: "Full-Stack Practice Projects",
+    engagement: "Personal",
+    client: "Self-initiated",
+    teaser: "A product management system — products, customers and everything around them — built end to end.",
+    desc: "A self-directed build: a product management system for handling a product catalogue, customer records and the day-to-day operations around them. I owned the whole thing — data model, API and UI — which is where the backend half of the skill set stays current, and where I use the parts of my stack client work doesn't always reach: Remix, Supabase and Zod.",
+    bullets: [
+      "Built the full product and customer management flow — create, edit, list, search and detail views — on a data model I designed rather than one handed to me.",
+      "Remix front-end with Tailwind, using loaders and actions so data fetching and mutations stay on the server side of the boundary.",
+      "Supabase for the database and auth, keeping the backend managed while the schema and access rules stayed mine.",
+      "Zod for schema validation across the client-server boundary, so bad data fails at the edge instead of deeper in.",
+      "This portfolio itself — React and Tailwind, with the Site Lens visualization mapping its own content as a graph.",
+    ],
+    tech: ["Remix", "React", "Supabase", "Zod", "Tailwind", "Node.js", "Express", "NestJS", "PostgreSQL", "MongoDB"],
   },
 ];

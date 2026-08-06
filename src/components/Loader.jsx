@@ -12,14 +12,34 @@ function readAccentRgb() {
   return hexToRgb(value || "#e11d48");
 }
 
+// Module scope, so it survives this component unmounting/remounting but resets
+// on a real page load. The intro is a first-visit flourish: <Loader/> renders
+// inside App's non-Site-Lens branch, so navigating /site-lens -> / tears that
+// branch down and mounts a fresh Loader, which replayed the whole 1.9s intro
+// every time you came back. Tracking it here makes the intro play once per
+// page load instead of once per client-side navigation.
+let hasPlayed = false;
+
 export default function Loader() {
-  const [done, setDone] = useState(false);
+  // Start already-dismissed on any mount after the first, so returning from
+  // Site Lens shows the portfolio immediately with no intro flash.
+  const [done, setDone] = useState(hasPlayed);
   const canvasRef = useRef(null);
   const doneRef = useRef(false);
 
   useEffect(() => {
+    if (hasPlayed) {
+      setDone(true);
+      return undefined;
+    }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = setTimeout(() => setDone(true), reduced ? 0 : 1900);
+    // hasPlayed flips when the intro actually FINISHES, not when it starts —
+    // StrictMode mounts, cleans up, then remounts in dev, and flipping it up
+    // front would make that second mount skip the intro and never dismiss.
+    const timer = setTimeout(() => {
+      hasPlayed = true;
+      setDone(true);
+    }, reduced ? 0 : 1900);
     return () => clearTimeout(timer);
   }, []);
 
