@@ -37,10 +37,10 @@ export default function Nav() {
       className="fixed left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)]
         bottom-4 sm:bottom-6 lg:bottom-auto lg:top-5"
     >
-      {/* `glass` is the site's own frosted surface (see index.css): a barely-there tint over a
-          32px blur, tinted light on the dark theme and smoke-dark on the light one — so the bar
-          reads as blurred glass rather than the near-solid panel a plain bg fill produced. It
-          brings its own border ring and shadow, so none are set here. */}
+      {/* `glass` is the site's shared frosted surface (see index.css) — translucent fill,
+          8.9px backdrop blur, hairline border and soft shadow, flipped per theme. It brings
+          its own border and shadow, so none are set here; `rounded-full` overrides the
+          class's default 16px radius. */}
       <div className="glass flex items-center gap-0.5 sm:gap-1 rounded-full p-1.5">
         {ITEMS.map((item) => {
           const Icon = ICONS[item.href];

@@ -54,12 +54,10 @@
    glass card should stay a bright white panel with a soft shadow, not
    invert to a dark tint the way plain white/black-utility roles do. */
 :root {
-  --glass-sheen-a: rgba(255, 255, 255, 0.32);
-  --glass-sheen-b: rgba(255, 255, 255, 0.1);
-  --glass-base: rgba(255, 255, 255, 0.14);
-  --glass-highlight: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-shadow: rgba(0, 0, 0, 0.35);
+  /* Dark theme (the default). Only the fill and border flip per theme — radius,
+     blur and shadow are identical in both, so they live in the .glass rule itself. */
+  --glass-base: rgba(0, 0, 0, 0.3);
+  --glass-border: rgba(0, 0, 0, 1);
 
   /* Tech-stack video showcase: a dark scrim over the (inherently dark)
      background video reads fine in dark mode, but the same dark scrim in
@@ -76,18 +74,8 @@
    of unstyled/wrong theme never shows before JS runs (the inline script in
    index.html sets the attribute before first paint). */
 :root[data-theme="light"] {
-  /* A translucent WHITE fill over an already-white page is mathematically a
-     no-op (alpha-blending white onto white stays white) — the card interior
-     was reading as invisible, leaving only the border/shadow visible. The
-     fill has to be a tinted (dark, low-opacity) wash instead so it composites
-     to a visible light-gray surface; --glass-highlight stays white since a
-     bright top-edge catch-light still reads correctly on a gray card. */
-  --glass-sheen-a: rgba(15, 15, 20, 0.07);
-  --glass-sheen-b: rgba(15, 15, 20, 0.025);
-  --glass-base: rgba(15, 15, 20, 0.045);
-  --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(15, 15, 20, 0.32);
-  --glass-shadow: rgba(15, 15, 20, 0.18);
+  --glass-base: rgba(255, 255, 255, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.53);
 
   --showcase-scrim: rgba(255, 255, 255, 0.72);
   --showcase-scrim-edge: rgba(255, 255, 255, 0.85);
@@ -179,24 +167,26 @@
 /* ============================================================
    GLASS
 ============================================================ */
-.glass {
-  background: linear-gradient(160deg, var(--glass-sheen-a), var(--glass-sheen-b) 60%), var(--glass-base);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  backdrop-filter: blur(32px) saturate(180%);
-  /* Order matters: box-shadows paint first-listed-on-top. The border ring must
-     come FIRST so it wins on all four sides. The top-edge catch-light is a 2px
-     strip whose upper 1px the border paints over, leaving a 1px highlight just
-     INSIDE the top border.
-     Previously the highlight was listed first as a 1px strip — exactly the same
-     pixels as the border's top edge — so it erased the top border. Invisible in
-     dark mode (white highlight over a white-tinted border just looked brighter),
-     but in light mode a near-opaque white highlight over a dark border wiped the
-     top border out entirely, leaving cards bordered on only three sides. */
-  box-shadow:
-    inset 0 0 0 1px var(--glass-border),
-    inset 0 2px 0 var(--glass-highlight),
-    0 8px 30px var(--glass-shadow);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+/* The one frosted surface for the whole site: nav pill, project cards, info
+   panels — anything that should read as glass wears this class. Only the fill
+   and the border change between themes (see the --glass-* tokens above); the
+   radius, blur and shadow are shared.
+
+   In @layer components on purpose. Unlayered CSS beats every @layer, so an
+   unlayered `border-radius` here would override Tailwind's own rounding
+   utilities — the nav pill's `rounded-full` among them, squaring it off. From
+   inside a layer the 16px is a DEFAULT that any `rounded-*` utility (or an
+   inline style, as GlassCard uses) can still override. */
+@layer components {
+  .glass {
+    background: var(--glass-base);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8.9px);
+    backdrop-filter: blur(8.9px);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
 }
 
 /* ============================================================
