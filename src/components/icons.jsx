@@ -58,6 +58,20 @@ export function IconArrowRight(props) {
   );
 }
 
+// Connected nodes — stands for the Site Lens graph visualization.
+export function IconGraph(props) {
+  return (
+    <svg {...base} strokeWidth={2} {...props}>
+      <path d="M12 12 6 6M12 12l6-5M12 12l-5 7M12 12l6 6" />
+      <circle cx="12" cy="12" r="2.4" />
+      <circle cx="5" cy="5" r="2" />
+      <circle cx="19" cy="6" r="2" />
+      <circle cx="6" cy="20" r="2" />
+      <circle cx="19" cy="19" r="2" />
+    </svg>
+  );
+}
+
 export function IconHome(props) {
   return (
     <svg {...base} strokeWidth={2.2} {...props}>

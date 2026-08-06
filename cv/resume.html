@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Muhammad Anas Resume</title>
+<style>
+  /* One-page A4 resume. Print geometry lives here so the PDF is reproducible:
+     `npm run cv` renders this file to public/resume.pdf with headless Chrome/Edge. Everything is sized
+     in pt/mm rather than px so the output is identical regardless of screen DPI. */
+  @page { size: A4; margin: 10mm 13mm; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Times New Roman", Times, Georgia, serif;
+    font-size: 9.4pt;
+    line-height: 1.26;
+    color: #000;
+  }
+
+  /* ---- header ---- */
+  .name {
+    text-align: center;
+    font-size: 17.5pt;
+    font-weight: bold;
+    letter-spacing: 0.5pt;
+    margin: 0 0 3pt;
+  }
+  .role-line { text-align: center; font-size: 10.5pt; font-style: italic; margin: 0 0 2.5pt; }
+  .contact { text-align: center; font-size: 9.5pt; margin-bottom: 1pt; }
+  .links { text-align: center; font-size: 9.5pt; }
+  .contact .sep, .links .sep { padding: 0 5pt; color: #444; }
+  a { color: #000; text-decoration: none; }
+
+  /* ---- section headings: uppercase label with a rule beneath, per the template ---- */
+  h2 {
+    font-size: 9.4pt;
+    font-weight: bold;
+    letter-spacing: 0.4pt;
+    text-transform: uppercase;
+    margin: 6.5pt 0 0;
+    padding-bottom: 1.5pt;
+  }
+  h2 + * { border-top: 0.8pt solid #000; padding-top: 4pt; }
+
+  /* ---- entry rows: title on the left, dates flush right ---- */
+  .entry { margin-bottom: 2.6pt; }
+  .entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10pt; }
+  .entry-title { font-weight: bold; }
+  .entry-title .role { font-weight: normal; font-style: italic; }
+  .entry-meta { white-space: nowrap; font-weight: bold; }
+  .entry-note { font-style: italic; }
+
+  ul { margin: 1pt 0 0; padding-left: 13pt; }
+  li { margin-bottom: 0.3pt; }
+
+  /* ---- skills: fixed label column, values wrap in the rest ---- */
+  table.skills { width: 100%; border-collapse: collapse; }
+  table.skills td { vertical-align: top; padding: 0.6pt 0; }
+  table.skills td.k { width: 66pt; font-weight: bold; padding-right: 6pt; }
+
+  .summary { margin: 0; text-align: justify; }
+</style>
+</head>
+<body>
+
+  <div class="name">MUHAMMAD ANAS</div>
+  <div class="role-line">Frontend-Focused Full-Stack Engineer</div>
+  <div class="contact">
+    anashamza457@gmail.com <span class="sep">|</span> +92 346 6273186 <span class="sep">|</span> Pakistan (GMT+5)
+  </div>
+  <div class="links">
+    <a href="https://www.linkedin.com/in/anas-bhambhani-33b8842a5">LinkedIn</a>
+    <span class="sep">|</span>
+    <a href="https://portfolio-pink-seven-68.vercel.app/">Portfolio</a>
+  </div>
+
+  <h2>Summary</h2>
+  <p class="summary">
+    Frontend-focused Full-Stack Engineer with 4+ years of experience building production web applications
+    and delivering 15+ client projects. Currently developing frontend features for an AI-powered SEO
+    platform serving 5,000+ agencies, working on AI-powered content and image generation, SEO analytics,
+    and integrations including Google Search Console, Google Analytics, Google Business Profile, keyword
+    rank tracking, and domain metrics. Strong expertise in React, TypeScript, and Next.js, with a focus on
+    scalable component architecture, rendering strategies, and performance optimization. Comfortable
+    working across the full stack with Node.js, Express, and SQL/NoSQL databases.
+  </p>
+
+  <h2>Education</h2>
+  <div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">The Islamia University of Bahawalpur</span>
+        <span class="entry-meta">2021 &ndash; 2025</span>
+      </div>
+      <div class="entry-note">Graduate in Computer Science &nbsp;|&nbsp; CGPA: 3.85 / 4.00</div>
+    </div>
+  </div>
+
+  <h2>Skills</h2>
+  <table class="skills">
+    <tr><td class="k">Languages</td><td>JavaScript, TypeScript, HTML, CSS, SQL</td></tr>
+    <tr><td class="k">Frontend</td><td>React, Next.js (App Router), Remix, Redux, MobX, React Query, Zod, Tailwind CSS, Ant Design, SCSS, Bootstrap</td></tr>
+    <tr><td class="k">Backend</td><td>Node.js, Express, NestJS, REST APIs, GraphQL</td></tr>
+    <tr><td class="k">Databases</td><td>MongoDB, PostgreSQL, Firebase, Supabase</td></tr>
+    <tr><td class="k">Tools</td><td>Git, GitHub, GitLab, CI/CD, Jira, Linear, Stripe, PayPal</td></tr>
+    <tr><td class="k">Practices</td><td>Component architecture, SSR &amp; code-splitting, state management, RBAC &amp; feature gating, performance optimization</td></tr>
+  </table>
+
+  <h2>Experience</h2>
+  <div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">Enigmatix <span class="role">| Frontend-Focused Full-Stack Engineer</span></span>
+        <span class="entry-meta">2023 &ndash; Present</span>
+      </div>
+      <ul>
+        <li>Drive frontend delivery for a large-scale, AI-powered SEO SaaS platform serving 5,000+ agencies and 430K+ installations.</li>
+        <li>Own the end-to-end Pricing &amp; Subscription system, covering multi-tier plans, feature gating and RBAC-aware UI, from API integration through to the screens users convert on.</li>
+        <li>Engineer a reusable component architecture with React, TypeScript, MobX and Tailwind, cutting duplication and speeding up feature work across the product.</li>
+        <li>Architect the frontend on Next.js App Router with dynamic routing, nested layouts and SSR, and improve performance ~25% through code-splitting, lazy loading and render control.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Projects</h2>
+  <div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">AI-Powered SEO Platform <span class="role">| AI SaaS</span></span>
+      </div>
+      <ul>
+        <li>Delivered production frontend features for an AI-powered SEO SaaS used by 5,000+ agencies, including the multi-tier Pricing &amp; Subscription system and conversion-focused workflows such as press-release generation.</li>
+        <li>Built on a reusable component architecture with TypeScript, React, MobX, Next.js, Tailwind and Ant Design over REST APIs.</li>
+      </ul>
+    </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">Office Management System <span class="role">| Internal Tooling</span></span>
+        <span class="entry-meta"><a href="https://oms.enigmatix.co/login">[Live]</a></span>
+      </div>
+      <ul>
+        <li>Built the frontend for a role-based office management system covering employee records, authentication flows, attendance tracking and task management on a Firebase backend.</li>
+        <li>Scalable component architecture and a fully responsive, mobile-first UI. React, Firebase, Redux, Ant Design, SCSS.</li>
+      </ul>
+    </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">HottoCare <span class="role">| Healthcare Platform</span></span>
+      </div>
+      <ul>
+        <li>Built a patient management application with full CRUD over patient records, secure authentication, protected routes and session management.</li>
+        <li>Integrated GetStream.io for real-time doctor-to-doctor messaging. Svelte 5, SvelteKit, Tailwind, shadcn/ui, Flask.</li>
+      </ul>
+    </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">DragonFly <span class="role">| Content Publishing Platform</span></span>
+      </div>
+      <ul>
+        <li>Built server-side rendered pages with Remix loaders and actions, applying caching strategies and progressive enhancement for fast page performance.</li>
+        <li>Integrated REST APIs for real-time content updates, with Zod for schema validation. Remix, FastAPI, Zod, Tailwind.</li>
+      </ul>
+    </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-title">Product Management System <span class="role">| Self-directed Full-Stack</span></span>
+      </div>
+      <ul>
+        <li>Built a product and customer management system end to end, covering catalogue, customer records, search and detail views, on a data model and API I designed myself.</li>
+        <li>Remix front-end with Tailwind, Supabase for database and auth, Zod validating across the client-server boundary.</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

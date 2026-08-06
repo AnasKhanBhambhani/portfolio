@@ -1,8 +1,10 @@
 import { NAV_ITEMS, NAV_IDS } from "../data/content";
 import useActiveSection from "../hooks/useActiveSection";
 import { useTheme } from "../context/ThemeContext";
+import { useFlipNav } from "../context/FlipNavContext";
 import {
-  IconHome, IconUsers, IconCode, IconLayers, IconClock, IconInfo, IconMail, IconSun, IconMoon,
+  IconHome, IconUsers, IconCode, IconLayers, IconClock, IconInfo, IconMail, IconGraph,
+  IconSun, IconMoon,
 } from "./icons";
 import { EASE } from "../ui";
 
@@ -25,13 +27,41 @@ const ICONS = {
 
 const SECTION_IDS = [HOME_ITEM.href.slice(1), ...NAV_IDS];
 
+// Site Lens is a 2MB+ lazy chunk, so it is NOT prefetched on page load — only on a
+// real signal of intent (hover/focus/first touch of the button). The dynamic import
+// is deduped by the module loader, so firing it more than once costs nothing.
+// Mirrors PortfolioLens's own prefetch.
+const prefetchSiteLens = () => import("../site-lens/mount");
+
 export default function Nav() {
   const active = useActiveSection(SECTION_IDS);
   const { theme, toggleTheme } = useTheme();
+  const flipNavigate = useFlipNav();
 
   return (
-    // Thumb-reach at the bottom on phones/tablets; conventional top chrome from lg up,
-    // where the cursor lives at the top of the window and there's room for it.
+    <>
+      {/* Site Lens lives in a section at the very bottom of the page, so it also gets a
+          permanent entry point up here — pinned top-right, on its own, so it reads as an
+          action rather than another section tab inside the pill. Fixed at the top in BOTH
+          layouts: below lg the pill is down at the thumb, leaving this corner free. */}
+      <button
+        type="button"
+        onClick={() => flipNavigate("/site-lens")}
+        onMouseEnter={prefetchSiteLens}
+        onFocus={prefetchSiteLens}
+        onTouchStart={prefetchSiteLens}
+        aria-label="Open the interactive visualization"
+        title="Open the interactive visualization"
+        className={`fixed top-4 right-4 sm:top-5 sm:right-6 z-50 grid h-11 grid-flow-col place-items-center gap-2
+          rounded-full grad-btn px-3.5 text-white shadow-[0_8px_24px_-6px_rgba(0,0,0,0.45)]
+          transition-transform duration-300 ${EASE} hover:scale-[1.04]`}
+      >
+        <IconGraph className="w-4.5 h-4.5" />
+        <span className="hidden sm:block text-sm font-semibold whitespace-nowrap">Visualization</span>
+      </button>
+
+    {/* Thumb-reach at the bottom on phones/tablets; conventional top chrome from lg up,
+        where the cursor lives at the top of the window and there's room for it. */}
     <nav
       aria-label="Sections"
       className="fixed left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)]
@@ -86,5 +116,6 @@ export default function Nav() {
         </button>
       </div>
     </nav>
+    </>
   );
 }
